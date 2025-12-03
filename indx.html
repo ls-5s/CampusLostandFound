@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园寻物小助手</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- 配置Tailwind自定义主题 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#FF7D00',
+                        neutral: {
+                            100: '#F5F7FA',
+                            200: '#E4E7ED',
+                            300: '#C0C6CF',
+                            400: '#909399',
+                            500: '#606266',
+                            600: '#303133',
+                        }
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 4px 20px rgba(0, 0, 0, 0.08)',
+                        'card-hover': '0 8px 30px rgba(0, 0, 0, 0.12)',
+                    }
+                },
+            }
+        }
+    </script>
+
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .transition-custom {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+    }
+  </style>
+
+    <style>
+        /* 全局样式 */
+        body {
+            scroll-behavior: smooth;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        /* 动画效果 */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 加载动画 */
+        .loader {
+            border-top-color: #165DFF;
+            animation: spinner 0.8s linear infinite;
+        }
+
+        @keyframes spinner {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c0c6cf;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #909399;
+        }
+    </style>
+</head>
+
+<body class="bg-neutral-100 text-neutral-600 min-h-screen flex flex-col">
+    <!-- 导航栏 -->
+    <header id="navbar" class="bg-white shadow-sm fixed w-full top-0 z-50 transition-custom">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-search text-primary text-2xl"></i>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">校园寻物小助手</h1>
+            </div>
+
+            <!-- 桌面端导航 -->
+            <nav class="hidden md:flex items-center space-x-6">
+                <a href="#home"
+                    class="nav-link text-neutral-500 hover:text-primary transition-custom font-medium">首页</a>
+                <a href="#publish"
+                    class="nav-link text-neutral-500 hover:text-primary transition-custom font-medium">发布信息</a>
+                <a href="#list"
+                    class="nav-link text-neutral-500 hover:text-primary transition-custom font-medium">寻物/招领</a>
+                <a href="#about"
+                    class="nav-link text-neutral-500 hover:text-primary transition-custom font-medium">关于我们</a>
+            </nav>
+
+            <!-- 移动端菜单按钮 -->
+            <button id="menuBtn" class="md:hidden text-neutral-600 hover:text-primary transition-custom text-xl">
+                <i class="fa fa-bars"></i>
+            </button>
+        </div>
+
+        <!-- 移动端导航菜单 -->
+        <div id="mobileMenu"
+            class="md:hidden bg-white shadow-md absolute w-full left-0 top-full transform -translate-y-full opacity-0 pointer-events-none transition-custom">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+                <a href="#home"
+                    class="mobile-nav-link py-2 text-neutral-500 hover:text-primary transition-custom font-medium">首页</a>
+                <a href="#publish"
+                    class="mobile-nav-link py-2 text-neutral-500 hover:text-primary transition-custom font-medium">发布信息</a>
+                <a href="#list"
+                    class="mobile-nav-link py-2 text-neutral-500 hover:text-primary transition-custom font-medium">寻物/招领</a>
+                <a href="#about"
+                    class="mobile-nav-link py-2 text-neutral-500 hover:text-primary transition-custom font-medium">关于我们</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="flex-grow pt-20 pb-16">
+        <!-- 首页横幅 -->
+        <section id="home" class="bg-gradient-to-r from-primary/90 to-primary py-16 md:py-24 text-white">
+            <div class="container mx-auto px-4">
+                <div class="max-w-3xl mx-auto text-center fade-in">
+                    <h2 class="text-[clamp(2rem,5vw,3.5rem)] font-bold mb-4 text-shadow">
+                        快速找回你的失物
+                    </h2>
+                    <p class="text-[clamp(1rem,2vw,1.25rem)] mb-8 text-white/90">
+                        校园寻物小助手 - 连接失主与拾获者，让每一件失物都能回家
+                    </p>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4">
+                        <a href="#publish"
+                            class="bg-secondary hover:bg-secondary/90 text-white font-medium py-3 px-8 rounded-full transition-custom shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                            发布信息
+                        </a>
+                        <a href="#list"
+                            class="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-medium py-3 px-8 rounded-full transition-custom border border-white/30 hover:border-white/50">
+                            浏览寻物/招领
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 统计数据 -->
+        <section class="py-10 bg-white">
+            <div class="container mx-auto px-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                    <div class="p-6 rounded-lg bg-neutral-50 transition-custom hover:shadow-card">
+                        <div class="text-primary text-3xl md:text-4xl font-bold mb-2" id="totalItems">0</div>
+                        <div class="text-neutral-500">已发布信息</div>
+                    </div>
+                    <div class="p-6 rounded-lg bg-neutral-50 transition-custom hover:shadow-card">
+                        <div class="text-secondary text-3xl md:text-4xl font-bold mb-2" id="foundItems">0</div>
+                        <div class="text-neutral-500">成功找回</div>
+                    </div>
+                    <div class="p-6 rounded-lg bg-neutral-50 transition-custom hover:shadow-card">
+                        <div class="text-green-500 text-3xl md:text-4xl font-bold mb-2" id="activeItems">0</div>
+                        <div class="text-neutral-500">待认领信息</div>
+                    </div>
+                    <div class="p-6 rounded-lg bg-neutral-50 transition-custom hover:shadow-card">
+                        <div class="text-purple-500 text-3xl md:text-4xl font-bold mb-2" id="usersCount">0</div>
+                        <div class="text-neutral-500">用户数量</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 发布信息区域 -->
+        <section id="publish" class="py-16 bg-neutral-100">
+            <div class="container mx-auto px-4">
+                <div class="max-w-3xl mx-auto">
+                    <div class="text-center mb-12">
+                        <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-neutral-600 mb-4">发布寻物/招领信息</h2>
+                        <p class="text-neutral-500 max-w-2xl mx-auto">填写相关信息，帮助失物快速回家或寻找失主</p>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-card p-6 md:p-8 fade-in">
+                        <!-- 信息类型选择 -->
+                        <div class="mb-8">
+                            <label class="block text-neutral-600 font-medium mb-3">信息类型</label>
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <label
+                                    class="flex items-center p-4 border-2 border-primary rounded-lg cursor-pointer transition-custom bg-primary/5">
+                                    <input type="radio" name="infoType" value="lost" checked
+                                        class="form-radio text-primary h-5 w-5">
+                                    <span class="ml-2">寻物启事</span>
+                                </label>
+                                <label
+                                    class="flex items-center p-4 border-2 border-neutral-200 rounded-lg cursor-pointer transition-custom hover:border-primary/30 hover:bg-primary/5">
+                                    <input type="radio" name="infoType" value="found"
+                                        class="form-radio text-primary h-5 w-5">
+                                    <span class="ml-2">招领启事</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 表单内容 -->
+                        <form id="publishForm" class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="itemName" class="block text-neutral-600 font-medium mb-2">物品名称 <span
+                                            class="text-red-500">*</span></label>
+                                    <input type="text" id="itemName" name="itemName" required
+                                        class="w-full px-4 py-3 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-custom"
+                                        placeholder="例如：校园卡、雨伞、笔记本电脑等">
+                                </div>
+
+                                <div>
+                                    <label for="itemCategory" class="block text-neutral-600 font-medium mb-2">物品分类 <span
+                                            class="text-red-500">*</span></label>
+                                    <select id="itemCategory" name="itemCategory" required
+                                        class="w-full px-4 py-3 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-custom appearance-none bg-white">
+                                        <option value="">请选择分类</option>
+                                        <option value="证件类">证件类（校园卡、身份证等）</option>
+                                        <option value="电子设备">电子设备（手机、电脑、平板等）</option>
+                                        <option value="学习用品">学习用品（书籍、笔记本、文具等）</option>
+                                        <option value="生活用品">生活用品（雨伞、水杯、背包等）</option>
+                                        <option value="衣物饰品">衣物饰品（外套、手表、眼镜等）</option>
+                                        <option value="其他">其他</option>
+                                    </select>
+                                    <div
+                                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-neutral-400">
+                                        <i class="fa fa-chevron-down text-xs"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="lostPlace" class="block text-neutral-600 font-medium mb-2">丢失/拾获地点 <span
+                                        class="text-red-500">*</span></label>
+                                <input type="text" id="lostPlace" name="lostPlace" required
+                                    class="w-full px-4 py-3 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-custom"
+                                    placeholder="例如：图书馆三楼阅览室、第一教学楼302教室等">
+                            </div>
+
+                            <div>
+                                <label for="lostDate" class="block text-neutral-600 font-medium mb-2">丢失/拾获日期 <span
+                                        class="text-red-500">*</span></label>
+                                <input type="date" id="lostDate" name="lostDate" required
+                                    class="w-full px-4 py-3 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-custom">
+                            </div>
+
+                            <div>
+                                <label for="itemDescription" class="block text-neutral-600 font-medium mb-2">物品描述 <span
+                                        class="text-red-500">*</span></label>
+                                <textarea id="itemDescription" name="itemDescription" rows="4" required
+                                    class="w-full px-4 py-3 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-custom"
+                                    placeholder="请详细描述物品特征、品牌、颜色、特殊标记等信息，有助于快速确认"></textarea>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="contactName" class="block text-neutral-600 font-medium mb-2">联系人 <span
+                                            class="text-red-500">*</span></label>
+                                    <input type="text" id="contactName" name="contactName" required
+                                        class="w-full px-4 py-3 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-custom"
+                                        placeholder="请填写真实姓名">
+                                </div>
+
+                                <div>
+                                    <label for="contactPhone" class="block text-neutral-600 font-medium mb-2">联系电话 <span
+                                            class="text-red-500">*</span></label>
+                                    <input type="tel" id="contactPhone" name="contactPhone" required
+                                        class="w-full px-4 py-3 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-custom"
+                                        placeholder="请填写有效联系电话">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="contactWechat"
+                                    class="block text-neutral-600 font-medium mb-2">微信号（可选）</label>
+                                <input type="text" id="contactWechat" name="contactWechat"
+                                    class="w-full px-4 py-3 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-custom"
+                                    placeholder="方便快捷联系">
+                            </div>
+
+                            <div class="pt-4">
+                                <button type="submit"
+                                    class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg transition-custom shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center">
+                                    <i class="fa fa-paper-plane mr-2"></i> 提交信息
+                                </button>
+                                <p class="text-center text-neutral-400 text-sm mt-3">
+                                    提交即表示同意我们的<a href="#" class="text-primary hover:underline">服务条款</a>和<a href="#"
+                                        class="text-primary hover:underline">隐私政策</a>
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 寻物招领列表 -->
+        <section id="list" class="py-16 bg-white">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-neutral-600 mb-4">寻物/招领信息</h2>
+                    <p class="text-neutral-500 max-w-2xl mx-auto">浏览最新的寻物和招领信息，帮助他人或找到自己的失物</p>
+                </div>
+
+                <!-- 筛选和搜索 -->
+                <div class="max-w-4xl mx-auto mb-10 bg-neutral-50 p-4 md:p-6 rounded-xl shadow-sm">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label for="filterType" class="block text-neutral-600 font-medium mb-2 text-sm">信息类型</label>
+                            <select id="filterType"
+                                class="w-full px-3 py-2 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-custom text-sm">
+                                <option value="all">全部</option>
+                                <option value="lost">寻物启事</option>
+                                <option value="found">招领启事</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="filterCategory"
+                                class="block text-neutral-600 font-medium mb-2 text-sm">物品分类</label>
+                            <select id="filterCategory"
+                                class="w-full px-3 py-2 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-custom text-sm">
+                                <option value="all">全部分类</option>
+                                <option value="证件类">证件类</option>
+                                <option value="电子设备">电子设备</option>
+                                <option value="学习用品">学习用品</option>
+                                <option value="生活用品">生活用品</option>
+                                <option value="衣物饰品">衣物饰品</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="searchInput" class="block text-neutral-600 font-medium mb-2 text-sm">搜索</label>
+                            <div class="relative">
+                                <input type="text" id="searchInput"
+                                    class="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-custom text-sm"
+                                    placeholder="搜索物品名称、地点...">
+                                <i
+                                    class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 信息列表 -->
+                <div class="max-w-4xl mx-auto">
+                    <div id="infoList" class="space-y-4">
+                        <!-- 列表项将通过JavaScript动态生成 -->
+                        <div class="text-center py-16 text-neutral-400" id="emptyList">
+                            <i class="fa fa-inbox text-5xl mb-4 opacity-50"></i>
+                            <p>暂无相关信息，快来发布第一条吧！</p>
+                        </div>
+
+                        <!-- 加载动画（默认隐藏） -->
+                        <div id="loadingIndicator" class="hidden text-center py-16">
+                            <div class="inline-block w-10 h-10 border-4 border-neutral-200 rounded-full loader"></div>
+                            <p class="mt-4 text-neutral-500">加载中...</p>
+                        </div>
+                    </div>
+
+                    <!-- 分页（默认隐藏） -->
+                    <div id="pagination" class="hidden mt-10 flex justify-center">
+                        <nav class="flex items-center space-x-1">
+                            <button id="prevPage"
+                                class="px-3 py-1 rounded-lg border border-neutral-200 text-neutral-500 hover:border-primary hover:text-primary transition-custom disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled>
+                                <i class="fa fa-chevron-left text-xs"></i>
+                            </button>
+                            <div id="pageNumbers" class="flex items-center space-x-1">
+                                <!-- 页码将通过JavaScript动态生成 -->
+                            </div>
+                            <button id="nextPage"
+                                class="px-3 py-1 rounded-lg border border-neutral-200 text-neutral-500 hover:border-primary hover:text-primary transition-custom disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled>
+                                <i class="fa fa-chevron-right text-xs"></i>
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 关于我们 -->
+        <section id="about" class="py-16 bg-neutral-100">
+            <div class="container mx-auto px-4">
+                <div class="max-w-3xl mx-auto">
+                    <div class="text-center mb-12">
+                        <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-neutral-600 mb-4">关于我们</h2>
+                        <p class="text-neutral-500 max-w-2xl mx-auto">校园寻物小助手，致力于打造安全、高效的校园失物招领平台</p>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-card p-6 md:p-8 fade-in">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <h3 class="text-xl font-bold text-neutral-600 mb-4">我们的使命</h3>
+                                <p class="text-neutral-500 mb-4">
+                                    校园寻物小助手旨在解决校园内失物招领信息不对称的问题，为师生提供一个便捷、高效、安全的信息交流平台。
+                                </p>
+                                <p class="text-neutral-500">
+                                    我们相信，每一件失物都有其主人，每一次善举都值得被赞扬。通过我们的平台，让失物快速回家，让善意传递校园。
+                                </p>
+                            </div>
+
+                            <div>
+                                <h3 class="text-xl font-bold text-neutral-600 mb-4">平台特色</h3>
+                                <ul class="space-y-3">
+                                    <li class="flex items-start">
+                                        <i class="fa fa-check-circle text-primary mt-1 mr-2"></i>
+                                        <span class="text-neutral-500">免费发布和查询寻物、招领信息</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-check-circle text-primary mt-1 mr-2"></i>
+                                        <span class="text-neutral-500">信息分类清晰，搜索功能强大</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-check-circle text-primary mt-1 mr-2"></i>
+                                        <span class="text-neutral-500">保护用户隐私，安全可靠</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-check-circle text-primary mt-1 mr-2"></i>
+                                        <span class="text-neutral-500">响应式设计，支持各种设备访问</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 pt-8 border-t border-neutral-100">
+                            <h3 class="text-xl font-bold text-neutral-600 mb-4">联系我们</h3>
+                            <div class="flex flex-wrap gap-4">
+                                <a href="#"
+                                    class="flex items-center px-4 py-2 bg-neutral-50 hover:bg-neutral-100 rounded-lg transition-custom">
+                                    <i class="fa fa-weixin text-green-500 text-xl mr-2"></i>
+                                    <span class="text-neutral-600">微信公众号：校园寻物小助手</span>
+                                </a>
+                                <a href="#"
+                                    class="flex items-center px-4 py-2 bg-neutral-50 hover:bg-neutral-100 rounded-lg transition-custom">
+                                    <i class="fa fa-envelope text-primary text-xl mr-2"></i>
+                                    <span class="text-neutral-600">邮箱：support@xyxwxs.com</span>
+                                </a>
+                                <a href="#"
+                                    class="flex items-center px-4 py-2 bg-neutral-50 hover:bg-neutral-100 rounded-lg transition-custom">
+                                    <i class="fa fa-phone text-secondary text-xl mr-2"></i>
+                                    <span class="text-neutral-600">客服电话：138-0000-0000</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 详情模态框 -->
+    <div id="detailModal"
+        class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-custom">
+        <div
+            class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto m-4 transform scale-95 transition-custom">
+            <div class="p-6 md:p-8">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <span id="modalTypeBadge"
+                            class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary mb-2">
+                            寻物启事
+                        </span>
+                        <h3 id="modalItemName" class="text-xl md:text-2xl font-bold text-neutral-600">物品名称</h3>
+                    </div>
+                    <button id="closeModal" class="text-neutral-400 hover:text-neutral-600 transition-custom text-xl">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="space-y-4 text-neutral-500">
+                    <div class="flex items-start">
+                        <i class="fa fa-folder-open text-primary mt-1 mr-3 w-5 text-center"></i>
+                        <div>
+                            <span class="font-medium text-neutral-600">物品分类：</span>
+                            <span id="modalCategory">分类信息</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <i class="fa fa-map-marker text-red-500 mt-1 mr-3 w-5 text-center"></i>
+                        <div>
+                            <span class="font-medium text-neutral-600" id="modalPlaceLabel">丢失地点：</span>
+                            <span id="modalPlace">地点信息</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <i class="fa fa-calendar text-purple-500 mt-1 mr-3 w-5 text-center"></i>
+                        <div>
+                            <span class="font-medium text-neutral-600" id="modalDateLabel">丢失日期：</span>
+                            <span id="modalDate">日期信息</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <i class="fa fa-info-circle text-secondary mt-1 mr-3 w-5 text-center"></i>
+                        <div>
+                            <span class="font-medium text-neutral-600">物品描述：</span>
+                            <p id="modalDescription" class="mt-1 whitespace-pre-line">详细描述信息...</p>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-neutral-100">
+                        <div class="flex items-start">
+                            <i class="fa fa-user text-green-500 mt-1 mr-3 w-5 text-center"></i>
+                            <div>
+                                <span class="font-medium text-neutral-600">联系人：</span>
+                                <span id="modalContact">联系人信息</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start mt-2">
+                            <i class="fa fa-phone text-green-500 mt-1 mr-3 w-5 text-center"></i>
+                            <div>
+                                <span class="font-medium text-neutral-600">联系电话：</span>
+                                <span id="modalPhone">联系电话</span>
+                            </div>
+                        </div>
+
+                        <div id="modalWechatContainer" class="flex items-start mt-2">
+                            <i class="fa fa-weixin text-green-500 mt-1 mr-3 w-5 text-center"></i>
+                            <div>
+                                <span class="font-medium text-neutral-600">微信号：</span>
+                                <span id="modalWechat">微信号码</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 text-center">
+                    <button id="contactBtn"
+                        class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-8 rounded-lg transition-custom shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                        <i class="fa fa-phone mr-2"></i> 联系对方
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成功提示模态框 -->
+    <div id="successModal"
+        class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-custom">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full m-4 transform scale-95 transition-custom">
+            <div class="p-6 text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                    <i class="fa fa-check text-2xl text-green-500"></i>
+                </div>
+                <h3 class="text-xl font-bold text-neutral-600 mb-2">发布成功！</h3>
+                <p class="text-neutral-500 mb-6">你的信息已成功发布，将帮助更多人看到</p>
+                <button id="closeSuccessModal"
+                    class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg transition-custom shadow-md hover:shadow-lg">
+                    确认
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="bg-neutral-600 text-white py-10">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fa fa-search text-white text-xl"></i>
+                        <h3 class="text-xl font-bold">校园寻物小助手</h3>
+                    </div>
+                    <p class="text-neutral-300 mb-4">
+                        连接失主与拾获者，让每一件失物都能回家
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-neutral-300 hover:text-white transition-custom">
+                            <i class="fa fa-weixin text-xl"></i>
+                        </a>
+                        <a href="#" class="text-neutral-300 hover:text-white transition-custom">
+                            <i class="fa fa-weibo text-xl"></i>
+                        </a>
+                        <a href="#" class="text-neutral-300 hover:text-white transition-custom">
+                            <i class="fa fa-qq text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold mb-4">快速链接</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#home" class="text-neutral-300 hover:text-white transition-custom">首页</a></li>
+                        <li><a href="#publish" class="text-neutral-300 hover:text-white transition-custom">发布信息</a></li>
+                        <li><a href="#list" class="text-neutral-300 hover:text-white transition-custom">寻物/招领</a></li>
+                        <li><a href="#about" class="text-neutral-300 hover:text-white transition-custom">关于我们</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold mb-4">联系我们</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-start">
+                            <i class="fa fa-envelope text-neutral-400 mt-1 mr-2"></i>
+                            <span class="text-neutral-300">support@xyxwxs.com</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-phone text-neutral-400 mt-1 mr-2"></i>
+                            <span class="text-neutral-300">138-0000-0000</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-map-marker text-neutral-400 mt-1 mr-2"></i>
+                            <span class="text-neutral-300">XX大学学生活动中心302室</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-8 pt-8 border-t border-neutral-500 text-center text-neutral-400 text-sm">
+                <p>© 2025 校园寻物小助手 版权所有 | 滇ICP备XXXXXXXX号</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript 代码 -->
+    <script>
+        // 全局变量
+        let infoData = JSON.parse(localStorage.getItem('campusLostAndFound')) || [];
+        let currentPage = 1;
+        const pageSize = 6;
+        let filteredData = [...infoData];
+
+        // DOM 元素
+        const navbar = document.getElementById('navbar');
+        const menuBtn = document.getElementById('menuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const publishForm = document.getElementById('publishForm');
+        const infoList = document.getElementById('infoList');
+        const emptyList = document.getElementById('emptyList');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const pagination = document.getElementById('pagination');
+        const pageNumbers = document.getElementById('pageNumbers');
+        const prevPageBtn = document.getElementById('prevPage');
+        const nextPageBtn = document.getElementById('nextPage');
+        const filterType = document.getElementById('filterType');
+        const filterCategory = document.getElementById('filterCategory');
+        const searchInput = document.getElementById('searchInput');
+        const detailModal = document.getElementById('detailModal');
+        const closeModal = document.getElementById('closeModal');
+        const successModal = document.getElementById('successModal');
+        const closeSuccessModal = document.getElementById('closeSuccessModal');
+        const contactBtn = document.getElementById('contactBtn');
+
+        // 统计数据元素
+        const totalItems = document.getElementById('totalItems');
+        const foundItems = document.getElementById('foundItems');
+        const activeItems = document.getElementById('activeItems');
+        const usersCount = document.getElementById('usersCount');
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function () {
+            // 设置当前日期为默认日期
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('lostDate').value = today;
+
+            // 渲染列表
+            renderInfoList();
+
+            // 更新统计数据
+            updateStatistics();
+
+            // 导航栏滚动效果
+            window.addEventListener('scroll', function () {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('py-2', 'shadow');
+                    navbar.classList.remove('py-3', 'shadow-sm');
+                } else {
+                    navbar.classList.add('py-3', 'shadow-sm');
+                    navbar.classList.remove('py-2', 'shadow');
+                }
+            });
+
+            // 移动端菜单切换
+            menuBtn.addEventListener('click', function () {
+                if (mobileMenu.classList.contains('opacity-0')) {
+                    mobileMenu.classList.remove('opacity-0', '-translate-y-full', 'pointer-events-none');
+                    mobileMenu.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                    menuBtn.innerHTML = '<i class="fa fa-times"></i>';
+                } else {
+                    mobileMenu.classList.add('opacity-0', '-translate-y-full', 'pointer-events-none');
+                    mobileMenu.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                    menuBtn.innerHTML = '<i class="fa fa-bars"></i>';
+                }
+            });
+
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    // 关闭移动端菜单
+                    if (!mobileMenu.classList.contains('opacity-0')) {
+                        mobileMenu.classList.add('opacity-0', '-translate-y-full', 'pointer-events-none');
+                        mobileMenu.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                        menuBtn.innerHTML = '<i class="fa fa-bars"></i>';
+                    }
+
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // 表单提交
+            publishForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                submitForm();
+            });
+
+            // 筛选和搜索事件
+            filterType.addEventListener('change', applyFilters);
+            filterCategory.addEventListener('change', applyFilters);
+            searchInput.addEventListener('input', applyFilters);
+
+            // 分页事件
+            prevPageBtn.addEventListener('click', goToPrevPage);
+            nextPageBtn.addEventListener('click', goToNextPage);
+
+            // 模态框事件
+            closeModal.addEventListener('click', closeDetailModal);
+            closeSuccessModal.addEventListener('click', closeSuccessModalFunc);
+            contactBtn.addEventListener('click', copyContactInfo);
+
+            // 点击模态框外部关闭
+            detailModal.addEventListener('click', function (e) {
+                if (e.target === detailModal) closeDetailModal();
+            });
+
+            successModal.addEventListener('click', function (e) {
+                if (e.target === successModal) closeSuccessModalFunc();
+            });
+
+            // 信息类型切换
+            document.querySelectorAll('input[name="infoType"]').forEach(radio => {
+                radio.addEventListener('change', function () {
+                    const labels = document.querySelectorAll('input[name="infoType"]').forEach(input => {
+                        const label = input.parentElement;
+                        if (input.checked) {
+                            label.classList.add('border-primary', 'bg-primary/5');
+                            label.classList.remove('border-neutral-200');
+                        } else {
+                            label.classList.add('border-neutral-200');
+                            label.classList.remove('border-primary', 'bg-primary/5');
+                        }
+                    });
+                });
+            });
+        });
+
+        // 提交表单
+        function submitForm() {
+            const infoType = document.querySelector('input[name="infoType"]:checked').value;
+            const itemName = document.getElementById('itemName').value;
+            const itemCategory = document.getElementById('itemCategory').value;
+            const lostPlace = document.getElementById('lostPlace').value;
+            const lostDate = document.getElementById('lostDate').value;
+            const itemDescription = document.getElementById('itemDescription').value;
+            const contactName = document.getElementById('contactName').value;
+            const contactPhone = document.getElementById('contactPhone').value;
+            const contactWechat = document.getElementById('contactWechat').value;
+
+            // 创建新信息对象
+            const newInfo = {
+                id: Date.now().toString(),
+                type: infoType,
+                name: itemName,
+                category: itemCategory,
+                place: lostPlace,
+                date: lostDate,
+                description: itemDescription,
+                contactName: contactName,
+                contactPhone: contactPhone,
+                contactWechat: contactWechat,
+                status: 'active',
+                createdAt: new Date().toISOString()
+            };
+
+            // 添加到数据中
+            infoData.unshift(newInfo);
+            filteredData = [...infoData];
+
+            // 保存到本地存储
+            localStorage.setItem('campusLostAndFound', JSON.stringify(infoData));
+
+            // 重置表单
+            publishForm.reset();
+            document.getElementById('lostDate').value = new Date().toISOString().split('T')[0];
+
+            // 重新渲染列表
+            renderInfoList();
+
+            // 更新统计数据
+            updateStatistics();
+
+            // 显示成功模态框
+            openSuccessModal();
+
+            // 滚动到列表区域
+            document.querySelector('#list').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // 应用筛选条件
+        function applyFilters() {
+            const type = filterType.value;
+            const category = filterCategory.value;
+            const searchTerm = searchInput.value.toLowerCase().trim();
+
+            // 重置当前页码
+            currentPage = 1;
+
+            // 应用筛选
+            filteredData = infoData.filter(info => {
+                // 类型筛选
+                const typeMatch = type === 'all' || info.type === type;
+
+                // 分类筛选
+                const categoryMatch = category === 'all' || info.category === category;
+
+                // 搜索筛选
+                const searchMatch =
+                    info.name.toLowerCase().includes(searchTerm) ||
+                    info.place.toLowerCase().includes(searchTerm) ||
+                    info.description.toLowerCase().includes(searchTerm) ||
+                    info.category.toLowerCase().includes(searchTerm);
+
+                return typeMatch && categoryMatch && searchMatch;
+            });
+
+            // 重新渲染列表
+            renderInfoList();
+        }
+
+        // 渲染信息列表
+        function renderInfoList() {
+            // 显示加载状态
+            infoList.innerHTML = '';
+            emptyList.classList.add('hidden');
+            loadingIndicator.classList.remove('hidden');
+
+            // 模拟加载延迟
+            setTimeout(() => {
+                loadingIndicator.classList.add('hidden');
+
+                if (filteredData.length === 0) {
+                    // 显示空列表状态
+                    emptyList.classList.remove('hidden');
+                    pagination.classList.add('hidden');
+                } else {
+                    // 隐藏空列表状态
+                    emptyList.classList.add('hidden');
+
+                    // 计算分页
+                    const totalPages = Math.ceil(filteredData.length / pageSize);
+                    const startIndex = (currentPage - 1) * pageSize;
+                    const endIndex = Math.min(startIndex + pageSize, filteredData.length);
+                    const currentItems = filteredData.slice(startIndex, endIndex);
+
+                    // 渲染当前页的列表项
+                    currentItems.forEach(info => {
+                        const listItem = createListItem(info);
+                        infoList.appendChild(listItem);
+                    });
+
+                    // 渲染分页
+                    renderPagination(totalPages);
+                }
+            }, 300);
+        }
+
+        // 创建列表项
+        function createListItem(info) {
+            const isLost = info.type === 'lost';
+
+            const item = document.createElement('div');
+            item.className = 'bg-white rounded-xl shadow-card hover:shadow-card-hover transition-custom p-5 cursor-pointer fade-in';
+            item.setAttribute('data-id', info.id);
+
+            item.innerHTML = `
+        <div class="flex justify-between items-start mb-3">
+          <span class="inline-block px-2 py-1 rounded-full text-xs font-medium ${isLost ? 'bg-primary/10 text-primary' : 'bg-secondary/10 text-secondary'}">
+            ${isLost ? '寻物启事' : '招领启事'}
+          </span>
+          <span class="text-neutral-400 text-xs">
+            ${formatDate(info.createdAt)}
+          </span>
+        </div>
+        <h3 class="text-lg font-bold text-neutral-600 mb-2 line-clamp-1">${info.name}</h3>
+        <div class="flex flex-wrap gap-2 mb-3">
+          <span class="text-xs text-neutral-500 flex items-center">
+            <i class="fa fa-folder-open mr-1 text-neutral-400"></i> ${info.category}
+          </span>
+          <span class="text-xs text-neutral-500 flex items-center">
+            <i class="fa fa-map-marker mr-1 text-neutral-400"></i> ${info.place}
+          </span>
+          <span class="text-xs text-neutral-500 flex items-center">
+            <i class="fa fa-calendar mr-1 text-neutral-400"></i> ${formatDate(info.date)}
+          </span>
+        </div>
+        <p class="text-neutral-500 text-sm line-clamp-2 mb-4">${info.description}</p>
+        <div class="flex justify-between items-center">
+          <span class="text-xs text-neutral-400">联系人：${info.contactName}</span>
+          <button class="text-primary hover:text-primary/80 transition-custom text-sm font-medium">
+            查看详情 <i class="fa fa-angle-right ml-1"></i>
+          </button>
+        </div>
+      `;
+
+            // 添加点击事件
+            item.addEventListener('click', function () {
+                openDetailModal(info);
+            });
+
+            return item;
+        }
+
+        // 渲染分页
+        function renderPagination(totalPages) {
+            if (totalPages <= 1) {
+                pagination.classList.add('hidden');
+                return;
+            }
+
+            pagination.classList.remove('hidden');
+            pageNumbers.innerHTML = '';
+
+            // 更新上一页按钮状态
+            prevPageBtn.disabled = currentPage === 1;
+
+            // 更新下一页按钮状态
+            nextPageBtn.disabled = currentPage === totalPages;
+
+            // 显示的页码范围
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+
+            // 确保至少显示5个页码（如果可能）
+            if (endPage - startPage < 4) {
+                if (startPage === 1) {
+                    endPage = Math.min(5, totalPages);
+                } else if (endPage === totalPages) {
+                    startPage = Math.max(1, totalPages - 4);
+                }
+            }
+
+            // 添加页码
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `px-3 py-1 rounded-lg text-sm transition-custom ${i === currentPage ? 'bg-primary text-white' : 'border border-neutral-200 text-neutral-500 hover:border-primary hover:text-primary'}`;
+                pageBtn.textContent = i;
+                pageBtn.addEventListener('click', () => goToPage(i));
+                pageNumbers.appendChild(pageBtn);
+            }
+        }
+
+        // 前往指定页码
+        function goToPage(page) {
+            if (page < 1 || page > Math.ceil(filteredData.length / pageSize)) return;
+
+            currentPage = page;
+            renderInfoList();
+
+            // 滚动到列表顶部
+            document.querySelector('#list').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // 前往上一页
+        function goToPrevPage() {
+            if (currentPage > 1) {
+                goToPage(currentPage - 1);
+            }
+        }
+
+        // 前往下一页
+        function goToNextPage() {
+            const totalPages = Math.ceil(filteredData.length / pageSize);
+            if (currentPage < totalPages) {
+                goToPage(currentPage + 1);
+            }
+        }
+
+        // 打开详情模态框
+        function openDetailModal(info) {
+            const isLost = info.type === 'lost';
+
+            // 更新模态框内容
+            document.getElementById('modalTypeBadge').textContent = isLost ? '寻物启事' : '招领启事';
+            document.getElementById('modalTypeBadge').className = `inline-block px-3 py-1 rounded-full text-sm font-medium ${isLost ? 'bg-primary/10 text-primary' : 'bg-secondary/10 text-secondary'}`;
+            document.getElementById('modalItemName').textContent = info.name;
+            document.getElementById('modalCategory').textContent = info.category;
+            document.getElementById('modalPlaceLabel').textContent = isLost ? '丢失地点：' : '拾获地点：';
+            document.getElementById('modalPlace').textContent = info.place;
+            document.getElementById('modalDateLabel').textContent = isLost ? '丢失日期：' : '拾获日期：';
+            document.getElementById('modalDate').textContent = formatDate(info.date);
+            document.getElementById('modalDescription').textContent = info.description;
+            document.getElementById('modalContact').textContent = info.contactName;
+            document.getElementById('modalPhone').textContent = info.contactPhone;
+
+            // 处理微信号显示
+            const wechatContainer = document.getElementById('modalWechatContainer');
+            const modalWechat = document.getElementById('modalWechat');
+
+            if (info.contactWechat) {
+                wechatContainer.classList.remove('hidden');
+                modalWechat.textContent = info.contactWechat;
+            } else {
+                wechatContainer.classList.add('hidden');
+            }
+
+            // 显示模态框
+            detailModal.classList.remove('opacity-0', 'pointer-events-none');
+            detailModal.querySelector('div').classList.remove('scale-95');
+            detailModal.querySelector('div').classList.add('scale-100');
+
+            // 禁止背景滚动
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 关闭详情模态框
+        function closeDetailModal() {
+            detailModal.classList.add('opacity-0', 'pointer-events-none');
+            detailModal.querySelector('div').classList.remove('scale-100');
+            detailModal.querySelector('div').classList.add('scale-95');
+
+            // 恢复背景滚动
+            document.body.style.overflow = '';
+        }
+
+        // 打开成功模态框
+        function openSuccessModal() {
+            successModal.classList.remove('opacity-0', 'pointer-events-none');
+            successModal.querySelector('div').classList.remove('scale-95');
+            successModal.querySelector('div').classList.add('scale-100');
+
+            // 禁止背景滚动
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 关闭成功模态框
+        function closeSuccessModalFunc() {
+            successModal.classList.add('opacity-0', 'pointer-events-none');
+            successModal.querySelector('div').classList.remove('scale-100');
+            successModal.querySelector('div').classList.add('scale-95');
+
+            // 恢复背景滚动
+            document.body.style.overflow = '';
+        }
+
+        // 复制联系方式
+        function copyContactInfo() {
+            const phone = document.getElementById('modalPhone').textContent;
+            const wechat = document.getElementById('modalWechat').textContent || '无';
+
+            const text = `联系人：${document.getElementById('modalContact').textContent}\n联系电话：${phone}\n微信号：${wechat}`;
+
+            navigator.clipboard.writeText(text).then(() => {
+                // 显示复制成功提示
+                const originalText = contactBtn.innerHTML;
+                contactBtn.innerHTML = '<i class="fa fa-check mr-2"></i> 已复制联系方式';
+                contactBtn.classList.remove('bg-primary');
+                contactBtn.classList.add('bg-green-500');
+
+                setTimeout(() => {
+                    contactBtn.innerHTML = originalText;
+                    contactBtn.classList.remove('bg-green-500');
+                    contactBtn.classList.add('bg-primary');
+                }, 2000);
+            }).catch(err => {
+                console.error('复制失败:', err);
+                alert('复制失败，请手动记录联系方式');
+            });
+        }
+
+        // 格式化日期
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+        }
+
+        // 更新统计数据
+        function updateStatistics() {
+            // 总信息数
+            totalItems.textContent = infoData.length;
+
+            // 已找回数量
+            const foundCount = infoData.filter(info => info.status === 'found').length;
+            foundItems.textContent = foundCount;
+
+            // 待认领数量
+            const activeCount = infoData.filter(info => info.status === 'active').length;
+            activeItems.textContent = activeCount;
+
+            // 估算用户数（去重联系人）
+            const users = new Set(infoData.map(info => info.contactPhone));
+            usersCount.textContent = users.size;
+
+            // 添加数字动画效果
+            animateNumbers();
+        }
+
+        // 数字动画效果
+        function animateNumbers() {
+            const counters = [totalItems, foundItems, activeItems, usersCount];
+
+            counters.forEach(counter => {
+                const target = parseInt(counter.textContent);
+                counter.textContent = '0';
+
+                const duration = 1500; // 动画持续时间（毫秒）
+                const stepTime = 30; // 每步时间（毫秒）
+                const totalSteps = duration / stepTime;
+                const stepSize = target / totalSteps;
+
+                let current = 0;
+                const timer = setInterval(() => {
+                    current += stepSize;
+                    if (current >= target) {
+                        counter.textContent = target;
+                        clearInterval(timer);
+                    } else {
+                        counter.textContent = Math.ceil(current);
+                    }
+                }, stepTime);
+            });
+        }
+    </script>
+</body>
+
+</html>
