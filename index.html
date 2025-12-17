@@ -2,1021 +2,500 @@
 <html lang="zh-CN">
 
 <head>
-    <meta charset="UTF-8" />
-    <!-- 核心适配：视口设置，禁止缩放，适配移动端 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="format-detection" content="telephone=no" /> <!-- 禁止识别手机号 -->
-    <title>校园失物招领助手</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>祈愿系统 - Excel增强版</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        /* 基础样式 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Microsoft Yahei", sans-serif;
+        /* --- 全局样式 & 变量 --- */
+        :root {
+            --theme-color: #ffd700;
+            /* 默认金色，会动态改变 */
+            --bg-gradient: radial-gradient(circle, #4a3e28 0%, #1a1c24 80%);
         }
 
         body {
-            background-color: #f5f5f5;
-            color: #333;
-            line-height: 1.6;
+            margin: 0;
+            overflow: hidden;
+            background-color: #1a1c24;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* --- 1. 输入界面 --- */
+        #input-screen {
+            background: rgba(0, 0, 0, 0.75);
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #4a4e5e;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+            z-index: 10;
+            transition: opacity 0.5s;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        h1 {
+            margin: 0 0 20px;
+            color: #d4c5a3;
+            letter-spacing: 2px;
+        }
+
+        /* Excel 上传按钮美化 */
+        .file-upload-wrapper {
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .btn-file {
+            border: 2px solid #6b7085;
+            color: #ddd;
+            background-color: transparent;
+            padding: 8px 20px;
+            border-radius: 8px;
             font-size: 14px;
-            /* 移动端基础字号 */
-        }
-
-        /* 容器：移动端宽度100%，减少左右间距 */
-        .container {
-            width: 95%;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 0 5px;
-        }
-
-        /* 导航栏：移动端优化 */
-        nav {
-            background-color: #fff;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            padding: 12px 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .nav-wrap {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            /* 移动端换行 */
-            gap: 10px;
-            /* 增加间距，防止挤在一起 */
-        }
-
-        .logo {
-            font-size: 18px;
-            /* 移动端缩小logo字号 */
-            font-weight: bold;
-            color: #2c5282;
-        }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            /* 链接换行 */
-            gap: 8px;
-            /* 移动端减少链接间距 */
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: #333;
-            margin-left: 0;
-            /* 取消原有margin，用gap控制 */
-            font-size: 13px;
-            /* 移动端缩小字号 */
-            padding: 4px 8px;
-            /* 增加点击区域 */
-        }
-
-        .nav-links a:hover {
-            color: #2c5282;
-        }
-
-        /* 按钮适配：增大移动端点击区域 */
-        .btn {
-            padding: 10px 16px;
-            /* 移动端增大内边距 */
-            border: none;
-            border-radius: 6px;
-            /* 增大圆角，更适配移动端 */
             cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-file:hover {
+            border-color: #dabe86;
+            color: #dabe86;
+        }
+
+        input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #6b7085;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            resize: none;
             font-size: 14px;
-            min-height: 44px;
-            /* 符合移动端最小点击区域规范 */
-            min-width: 80px;
-            display: inline-flex;
+            margin-bottom: 20px;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .btn-wish {
+            background: linear-gradient(to right, #dabe86, #f3e6c3);
+            border: none;
+            padding: 12px 50px;
+            font-size: 18px;
+            color: #584b31;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(218, 190, 134, 0.4);
+            transition: transform 0.1s, filter 0.2s;
+            display: flex;
             align-items: center;
             justify-content: center;
+            margin: 0 auto;
+            gap: 10px;
         }
 
-        .btn-primary {
-            background-color: #2c5282;
-            color: white;
+        .btn-wish:hover {
+            filter: brightness(1.1);
+            transform: scale(1.05);
         }
 
-        .btn-primary:hover {
-            background-color: #234369;
+        .btn-wish:active {
+            transform: scale(0.95);
         }
 
-        .btn-secondary {
-            background-color: #f0f0f0;
-            color: #333;
-            margin-left: 8px;
+        .primogem-icon {
+            width: 24px;
+            height: 24px;
+            background: conic-gradient(from 45deg, #a7d8e6, #c597d8, #a7d8e6);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
         }
 
-        .btn-secondary:hover {
-            background-color: #e0e0e0;
+        /* --- 2. 动画容器 --- */
+        #animation-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0;
+            overflow: hidden;
+            z-index: 20;
         }
 
-        .btn-danger {
-            background-color: #e53e3e;
-            color: white;
+        /* 流星 - 使用变量控制颜色 */
+        .meteor {
+            position: absolute;
+            width: 100px;
+            height: 4px;
+            /* 动态渐变颜色 */
+            background: linear-gradient(90deg, transparent, #fff, var(--theme-color));
+            border-radius: 50%;
+            top: -100px;
+            right: -100px;
+            transform: rotate(-45deg);
+            box-shadow: 0 0 20px var(--theme-color);
+            display: none;
         }
 
-        .btn-danger:hover {
-            background-color: #c53030;
+        @keyframes shoot {
+            0% {
+                top: -10%;
+                right: -10%;
+                width: 100px;
+                opacity: 1;
+            }
+
+            60% {
+                top: 50%;
+                right: 50%;
+                width: 300px;
+                opacity: 1;
+            }
+
+            100% {
+                top: 52%;
+                right: 52%;
+                width: 50px;
+                opacity: 0;
+            }
         }
 
-        /* 通用模块样式 */
-        .section {
-            padding: 20px 0;
-            /* 移动端减少上下内边距 */
+        #flash {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
         }
 
-        .title {
-            text-align: center;
-            margin-bottom: 18px;
-            color: #2c5282;
-            font-size: 18px;
-            /* 移动端标题字号 */
+        /* --- 3. 结果展示 --- */
+        #result-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            /* 背景动态变化 */
+            background: var(--bg-gradient);
+            opacity: 0;
+            transition: opacity 1s;
         }
 
         .card {
-            background-color: white;
-            border-radius: 10px;
-            /* 增大圆角 */
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            padding: 18px;
-            /* 移动端调整内边距 */
-            margin-bottom: 16px;
-            /* 减少间距 */
-        }
-
-        /* 表单样式：移动端优化 */
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 14px;
-            color: #666;
-        }
-
-        input,
-        select,
-        textarea {
-            width: 100%;
-            padding: 12px 10px;
-            /* 增大内边距，提升输入体验 */
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-            min-height: 44px;
-            /* 符合移动端输入框规范 */
-        }
-
-        input:focus,
-        select:focus,
-        textarea:focus {
-            outline: none;
-            border-color: #2c5282;
-            box-shadow: 0 0 0 2px rgba(44, 82, 130, 0.1);
-            /* 增加聚焦阴影，更明显 */
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 120px;
-            /* 移动端增大最小高度 */
-        }
-
-        /* 登录弹窗：移动端全屏适配 */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: none;
-            justify-content: center;
-            align-items: flex-start;
-            /* 弹窗顶部对齐，避免小屏遮挡 */
-            z-index: 999;
-            padding: 20px 0;
-            overflow-y: auto;
-            /* 弹窗内容超出可滚动 */
-        }
-
-        .modal-content {
-            background-color: white;
-            width: 92%;
-            /* 移动端更宽 */
-            max-width: 400px;
-            border-radius: 10px;
-            padding: 24px;
-            position: relative;
-            margin-top: 50px;
-            /* 顶部留空 */
-        }
-
-        .close-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 22px;
-            cursor: pointer;
-            color: #999;
-            width: 44px;
-            /* 增大关闭按钮点击区域 */
-            height: 44px;
+            width: 0px;
+            height: 600px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.5));
+            border: 2px solid var(--theme-color);
+            box-shadow: 0 0 50px var(--theme-color);
             display: flex;
-            align-items: center;
+            flex-direction: column;
             justify-content: center;
-        }
-
-        .close-btn:hover {
-            color: #333;
-        }
-
-        /* 列表筛选栏：移动端适配 */
-        .filter-bar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 16px;
             align-items: center;
-            padding: 12px;
-            /* 增加内边距 */
-        }
-
-        .search-input {
-            flex: 1;
-            min-width: 100%;
-            /* 移动端搜索框占满一行 */
-            margin-top: 8px;
-        }
-
-        /* 列表样式：移动端优化 */
-        .item-list {
-            display: grid;
-            grid-template-columns: 1fr;
-            /* 移动端强制单列 */
-            gap: 16px;
-            margin-top: 16px;
-        }
-
-        .item-card {
-            padding: 16px;
-            border-left: 4px solid #2c5282;
             position: relative;
+            transform: scale(0.8);
+            opacity: 0;
+            overflow: hidden;
         }
 
-        .item-tag {
-            display: inline-block;
-            padding: 4px 10px;
-            font-size: 12px;
-            border-radius: 4px;
-            margin-bottom: 10px;
-        }
-
-        .tag-lost {
-            background-color: #fee;
-            color: #e53e3e;
-        }
-
-        .tag-found {
-            background-color: #efe;
-            color: #38a169;
-        }
-
-        .item-title {
-            font-size: 16px;
+        .winner-name {
+            font-size: 60px;
             font-weight: bold;
-            margin-bottom: 6px;
-        }
-
-        .item-info {
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 4px;
-            line-height: 1.5;
-        }
-
-        .item-desc {
-            font-size: 13px;
-            color: #666;
-            margin: 8px 0;
-            padding: 10px;
-            background-color: #f9f9f9;
-            border-radius: 6px;
-        }
-
-        .item-actions {
-            margin-top: 12px;
-            display: flex;
-            gap: 10px;
-        }
-
-        /* 详情弹窗：移动端适配 */
-        .detail-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: none;
-            justify-content: center;
-            align-items: flex-start;
-            z-index: 999;
-            padding: 20px 0;
-            overflow-y: auto;
-        }
-
-        .detail-content {
-            background-color: white;
-            width: 92%;
-            max-width: 500px;
-            border-radius: 10px;
-            padding: 24px;
-            position: relative;
-            margin-top: 50px;
-        }
-
-        /* 页脚：移动端优化 */
-        footer {
-            background-color: #2c5282;
-            color: white;
+            color: #fff;
+            text-shadow: 0 0 20px var(--theme-color);
+            z-index: 2;
+            opacity: 0;
+            transform: translateY(20px);
             text-align: center;
-            padding: 16px 0;
-            margin-top: 20px;
-            font-size: 13px;
+            padding: 0 20px;
         }
 
-        /* 媒体查询：针对小屏手机（<375px） */
-        @media (max-width: 375px) {
-            .nav-wrap {
-                flex-direction: column;
-                /* 小屏导航栏纵向排列 */
-                align-items: flex-start;
-            }
+        .stars {
+            color: var(--theme-color);
+            font-size: 30px;
+            margin-bottom: 20px;
+            letter-spacing: 5px;
+            opacity: 0;
+        }
 
-            .nav-links {
-                width: 100%;
-                justify-content: space-between;
-            }
+        .silhouette {
+            font-size: 150px;
+            position: absolute;
+            color: rgba(0, 0, 0, 0.3);
+            z-index: 1;
+        }
 
-            .btn {
-                min-width: 70px;
-                padding: 8px 12px;
-                font-size: 13px;
-            }
+        .rays {
+            position: absolute;
+            width: 1000px;
+            height: 1000px;
+            /* 动态光芒颜色 */
+            background: repeating-conic-gradient(var(--theme-color) 0% 5%, transparent 5% 10%);
+            opacity: 0.1;
+            animation: rotate 20s linear infinite;
+            z-index: 0;
+        }
 
-            .title {
-                font-size: 16px;
-            }
-
-            .card {
-                padding: 14px;
+        @keyframes rotate {
+            100% {
+                transform: rotate(360deg);
             }
         }
 
-        /* 媒体查询：平板（>768px）恢复部分样式 */
-        @media (min-width: 768px) {
-            .item-list {
-                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-                /* 平板恢复多列 */
+        @keyframes cardReveal {
+            0% {
+                width: 5px;
+                opacity: 0;
+                transform: scale(3);
+                filter: brightness(10);
             }
 
-            .search-input {
-                min-width: 200px;
-                /* 平板搜索框不占满 */
-                margin-top: 0;
+            50% {
+                width: 5px;
+                opacity: 1;
+                transform: scale(1);
+                filter: brightness(2);
             }
 
-            .nav-wrap {
-                flex-wrap: nowrap;
-                /* 平板导航不换行 */
+            100% {
+                width: 350px;
+                filter: brightness(1);
             }
+        }
+
+        @keyframes textFadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn-reset {
+            margin-top: 30px;
+            padding: 10px 30px;
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #ddd;
+            border-radius: 30px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .btn-reset:hover {
+            background: rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
 
 <body>
-    <!-- 导航栏 -->
-    <nav>
-        <div class="container nav-wrap">
-            <div class="logo">校园失物招领</div>
-            <div class="nav-links">
-                <a href="#home">首页</a>
-                <a href="#lost">发布失物</a>
-                <a href="#found">发布招领</a>
-                <a href="#list">物品列表</a>
-                <button class="btn btn-primary" onclick="openModal()">登录</button>
-            </div>
-        </div>
-    </nav>
 
-    <!-- 登录弹窗 -->
-    <div class="modal" id="loginModal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
-            <h2 class="title">用户登录</h2>
-            <form onsubmit="login(event)">
-                <div class="form-group">
-                    <label for="username">用户名/学号</label>
-                    <input type="text" id="username" required />
-                </div>
-                <div class="form-group">
-                    <label for="password">密码</label>
-                    <input type="password" id="password" required />
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%">
-                    登录
-                </button>
-            </form>
+    <div id="input-screen">
+        <h1>人员名单</h1>
+
+        <div class="file-upload-wrapper">
+            <button class="btn-file">📂 导入 Excel 文件</button>
+            <input type="file" id="excel-file" accept=".xlsx, .xls" onchange="importExcel(this)">
         </div>
+
+        <textarea id="names" placeholder="或者在此手动输入&#10;每行一个名字"></textarea>
+
+        <button class="btn-wish" onclick="startWish()">
+            <div class="primogem-icon"></div>
+            祈愿 x1
+        </button>
+        <p style="font-size: 12px; color: #888; margin-top:10px;">Excel 格式：第一列为名字列表</p>
     </div>
 
-    <!-- 详情弹窗 -->
-    <div class="detail-modal" id="detailModal">
-        <div class="detail-content">
-            <span class="close-btn" onclick="closeDetailModal()">&times;</span>
-            <h2 class="title" id="detailTitle"></h2>
-            <div id="detailContent" style="margin-top: 20px"></div>
-        </div>
+    <div id="animation-container">
+        <div class="meteor" id="meteor"></div>
+        <div id="flash"></div>
     </div>
 
-    <!-- 首页 -->
-    <section id="home" class="section">
-        <div class="container">
-            <h2 class="title">校园失物招领助手</h2>
-            <div class="card">
-                <p>
-                    欢迎使用校园失物招领平台，在这里你可以发布失物信息、查找招领信息，让遗失的物品早日回家。
-                </p>
-                <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap">
-                    <a href="#lost"><button class="btn btn-primary">发布失物</button></a>
-                    <a href="#found"><button class="btn btn-primary">
-                            发布招领
-                        </button></a>
-                </div>
-            </div>
+    <div id="result-screen">
+        <div class="rays"></div>
+        <div class="card" id="result-card">
+            <div class="silhouette">?</div>
+            <div class="stars" id="star-display">★★★★★</div>
+            <div class="winner-name" id="winner-text"></div>
         </div>
-    </section>
-
-    <!-- 发布失物 -->
-    <section id="lost" class="section">
-        <div class="container">
-            <h2 class="title">发布失物信息</h2>
-            <div class="card">
-                <form onsubmit="publishLost(event)">
-                    <div class="form-group">
-                        <label for="lostName">物品名称</label>
-                        <input type="text" id="lostName" placeholder="例如：校园卡、钱包、手机等" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="lostType">物品类型</label>
-                        <select id="lostType" required>
-                            <option value="">请选择物品类型</option>
-                            <option value="校园卡">校园卡</option>
-                            <option value="电子产品">电子产品</option>
-                            <option value="钱包/证件">钱包/证件</option>
-                            <option value="学习用品">学习用品</option>
-                            <option value="其他">其他</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="lostTime">丢失时间</label>
-                        <input type="date" id="lostTime" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="lostLocation">丢失地点</label>
-                        <input type="text" id="lostLocation" placeholder="例如：图书馆三楼、篮球场等" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="lostDesc">物品描述</label>
-                        <textarea id="lostDesc" placeholder="请描述物品特征、外观等信息"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="lostContact">联系方式</label>
-                        <input type="text" id="lostContact" placeholder="电话/微信/QQ等" required />
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%">发布失物信息</button>
-                </form>
-            </div>
-        </div>
-    </section>
-
-    <!-- 发布招领 -->
-    <section id="found" class="section">
-        <div class="container">
-            <h2 class="title">发布招领信息</h2>
-            <div class="card">
-                <form onsubmit="publishFound(event)">
-                    <div class="form-group">
-                        <label for="foundName">物品名称</label>
-                        <input type="text" id="foundName" placeholder="例如：校园卡、钱包、手机等" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="foundType">物品类型</label>
-                        <select id="foundType" required>
-                            <option value="">请选择物品类型</option>
-                            <option value="校园卡">校园卡</option>
-                            <option value="电子产品">电子产品</option>
-                            <option value="钱包/证件">钱包/证件</option>
-                            <option value="学习用品">学习用品</option>
-                            <option value="其他">其他</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="foundTime">捡到时间</label>
-                        <input type="date" id="foundTime" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="foundLocation">捡到地点</label>
-                        <input type="text" id="foundLocation" placeholder="例如：图书馆三楼、篮球场等" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="foundDesc">物品描述</label>
-                        <textarea id="foundDesc" placeholder="请描述物品特征、外观等信息"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="foundContact">联系方式</label>
-                        <input type="text" id="foundContact" placeholder="电话/微信/QQ等" required />
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%">发布招领信息</button>
-                </form>
-            </div>
-        </div>
-    </section>
-
-    <!-- 物品列表 -->
-    <section id="list" class="section">
-        <div class="container">
-            <h2 class="title">失物招领列表</h2>
-
-            <!-- 筛选和搜索栏 -->
-            <div class="filter-bar card">
-                <button class="btn btn-primary" onclick="filterItems('all')">
-                    全部
-                </button>
-                <button class="btn btn-secondary" onclick="filterItems('lost')">
-                    失物
-                </button>
-                <button class="btn btn-secondary" onclick="filterItems('found')">
-                    招领
-                </button>
-                <input type="text" id="searchInput" class="search-input" placeholder="搜索物品名称/地点..."
-                    oninput="searchItems()" />
-            </div>
-
-            <!-- 物品列表容器 -->
-            <div class="item-list" id="itemListContainer">
-                <!-- 动态渲染内容 -->
-            </div>
-        </div>
-    </section>
-
-    <!-- 页脚 -->
-    <footer>
-        <div class="container">校园失物招领助手 © 2025 版权所有</div>
-    </footer>
+        <button class="btn-reset" onclick="resetSystem()">再次祈愿</button>
+    </div>
 
     <script>
-        // 全局变量
-        let itemList = [];
-        let currentFilter = "all"; // 当前筛选类型：all/lost/found
-        let currentUser = null;
-
-        // ========== 登录相关 ==========
-        function openModal() {
-            document.getElementById("loginModal").style.display = "flex";
-        }
-
-        function closeModal() {
-            document.getElementById("loginModal").style.display = "none";
-        }
-
-        // 点击弹窗外部关闭
-        window.onclick = function (event) {
-            const modal = document.getElementById("loginModal");
-            const detailModal = document.getElementById("detailModal");
-            if (event.target === modal) {
-                closeModal();
-            }
-            if (event.target === detailModal) {
-                closeDetailModal();
-            }
+        // 定义不同稀有度的颜色和配置
+        // 3星: 蓝色, 4星: 紫色, 5星: 金色
+        const rarityConfig = {
+            3: { color: '#38b6ff', stars: '★★★', bg: 'radial-gradient(circle, #1a2a38 0%, #1a1c24 80%)' },
+            4: { color: '#d068ff', stars: '★★★★', bg: 'radial-gradient(circle, #2d1a38 0%, #1a1c24 80%)' },
+            5: { color: '#ffd700', stars: '★★★★★', bg: 'radial-gradient(circle, #4a3e28 0%, #1a1c24 80%)' }
         };
 
-        // 模拟用户数据
-        const mockUsers = [
-            {
-                username: "123456",
-                password: "123456",
-                name: "蓝鹏",
-                role: "学生",
-            },
-            {
-                username: "admin",
-                password: "admin123",
-                name: "管理员",
-                role: "管理员",
-            },
-        ];
+        // 处理 Excel 导入
+        function importExcel(input) {
+            const file = input.files[0];
+            if (!file) return;
 
-        // 登录验证
-        function login(e) {
-            e.preventDefault();
-            const username = document.getElementById("username").value.trim();
-            const password = document.getElementById("password").value.trim();
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
 
-            if (!username || !password) {
-                alert("请输入账号和密码！");
-                return;
-            }
+                // 读取第一个工作表
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
 
-            const user = mockUsers.find(
-                (u) => u.username === username && u.password === password
-            );
-            if (user) {
-                sessionStorage.setItem("loginUser", JSON.stringify(user));
-                currentUser = user;
-                updateUserUI(user);
-                closeModal();
-                alert(`欢迎你，${user.name}！`);
-                // 重新渲染列表（显示删除按钮）
-                renderItemList();
-            } else {
-                alert("账号或密码错误！");
-                document.getElementById("password").value = "";
-            }
-        }
+                // 转换为 JSON (数组)
+                const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-        // 更新用户UI
-        function updateUserUI(user) {
-            const navLinks = document.querySelector(".nav-links");
-            const loginBtn = navLinks.querySelector(".btn-primary");
-            if (loginBtn) {
-                loginBtn.outerHTML = `
-                    <span style="margin-left:8px; font-size:13px;">欢迎：${user.name}</span>
-                    <button class="btn btn-primary" style="margin-left:8px;" onclick="logout()">退出</button>
-                `;
-            }
-        }
-
-        // 退出登录
-        function logout() {
-            sessionStorage.removeItem("loginUser");
-            currentUser = null;
-            const navLinks = document.querySelector(".nav-links");
-            const userInfo = navLinks.querySelector("span");
-            if (userInfo) {
-                userInfo.nextElementSibling.remove();
-                userInfo.outerHTML = `<button class="btn btn-primary" onclick="openModal()">登录</button>`;
-            }
-            // 重新渲染列表（隐藏删除按钮）
-            renderItemList();
-            alert("已退出登录！");
-        }
-
-        // ========== 失物/招领信息核心逻辑 ==========
-        // 初始化：从sessionStorage读取数据
-        function initItemList() {
-            const storedItems = sessionStorage.getItem("lostFoundItems");
-            itemList = storedItems
-                ? JSON.parse(storedItems)
-                : [
-                    // 默认示例数据（添加发布者字段）
-                    {
-                        id: 1,
-                        type: "lost",
-                        name: "校园卡",
-                        itemType: "校园卡",
-                        time: "2025-01-15",
-                        location: "图书馆三楼自习区",
-                        contact: "12345678910",
-                        desc: "蓝色卡套，学号：2023001001",
-                        publisher: "student1",
-                    },
-                    {
-                        id: 2,
-                        type: "found",
-                        name: "黑色钱包",
-                        itemType: "钱包/证件",
-                        time: "2025-01-14",
-                        location: "食堂一楼",
-                        contact: "12345678910",
-                        desc: "内含身份证、银行卡若干，现金少量",
-                        publisher: "admin",
-                    },
-                    {
-                        id: 3,
-                        type: "lost",
-                        name: "AirPods Pro",
-                        itemType: "电子产品",
-                        time: "2025-01-13",
-                        location: "教学楼A栋302教室",
-                        contact: "12345678910",
-                        desc: "白色耳机盒，黑色保护套",
-                        publisher: "student1",
-                    },
-                ];
-            renderItemList(); // 渲染列表
-        }
-
-        // 渲染物品列表（支持筛选和权限控制）
-        function renderItemList(filteredItems = null) {
-            const listContainer = document.getElementById("itemListContainer");
-            listContainer.innerHTML = "";
-
-            // 确定要渲染的列表（筛选后/全部）
-            const itemsToRender =
-                filteredItems ||
-                (currentFilter === "all"
-                    ? itemList
-                    : itemList.filter((item) => item.type === currentFilter));
-
-            if (itemsToRender.length === 0) {
-                listContainer.innerHTML = `<div class="card" style="text-align:center; padding:30px;">暂无相关物品信息</div>`;
-                return;
-            }
-
-            // 遍历生成列表项
-            itemsToRender.forEach((item) => {
-                const itemCard = document.createElement("div");
-                itemCard.className = "card item-card";
-
-                // 判断当前登录用户是否有权限删除
-                const canDelete =
-                    currentUser &&
-                    (currentUser.username === item.publisher || // 发布者本人
-                        currentUser.role === "管理员"); // 管理员权限
-
-                itemCard.innerHTML = `
-                    <span class="item-tag ${item.type === "lost" ? "tag-lost" : "tag-found"
-                    }">
-                        ${item.type === "lost" ? "失物" : "招领"}
-                    </span>
-                    <div class="item-title">${item.name}</div>
-                    <div class="item-info">物品类型：${item.itemType}</div>
-                    <div class="item-info">${item.type === "lost" ? "丢失" : "捡到"
-                    }地点：${item.location}</div>
-                    <div class="item-info">${item.type === "lost" ? "丢失" : "捡到"
-                    }时间：${item.time}</div>
-                    ${item.desc
-                        ? `<div class="item-desc">描述：${item.desc}</div>`
-                        : ""
-                    }
-                    <div class="item-actions">
-                        <button class="btn btn-primary" onclick="viewItemDetail(${item.id
-                    })" style="flex:1">查看详情</button>
-                        ${canDelete
-                        ? `<button class="btn btn-danger" onclick="deleteItem(${item.id})" style="flex:1">删除</button>`
-                        : ""
-                    }
-                    </div>
-                `;
-                listContainer.appendChild(itemCard);
-            });
-        }
-
-        // 保存数据到sessionStorage
-        function saveItemList() {
-            sessionStorage.setItem("lostFoundItems", JSON.stringify(itemList));
-        }
-
-        // 筛选物品
-        function filterItems(type) {
-            currentFilter = type;
-            // 更新筛选按钮样式
-            const filterBtns = document.querySelectorAll(".filter-bar .btn");
-            filterBtns.forEach((btn) => {
-                btn.classList.remove("btn-primary");
-                btn.classList.add("btn-secondary");
-            });
-            event.target.classList.remove("btn-secondary");
-            event.target.classList.add("btn-primary");
-            // 重新渲染
-            renderItemList();
-        }
-
-        // 搜索物品
-        function searchItems() {
-            const searchText = document
-                .getElementById("searchInput")
-                .value.trim()
-                .toLowerCase();
-            if (!searchText) {
-                renderItemList(); // 清空搜索，恢复筛选结果
-                return;
-            }
-            // 模糊搜索：名称/地点/类型
-            const filtered = itemList.filter(
-                (item) =>
-                    item.name.toLowerCase().includes(searchText) ||
-                    item.location.toLowerCase().includes(searchText) ||
-                    item.itemType.toLowerCase().includes(searchText)
-            );
-            renderItemList(filtered);
-        }
-
-        // 查看物品详情
-        function viewItemDetail(itemId) {
-            const item = itemList.find((i) => i.id === itemId);
-            if (!item) return;
-
-            // 填充详情内容
-            document.getElementById("detailTitle").textContent = `${item.type === "lost" ? "失物详情" : "招领详情"
-                }`;
-            document.getElementById("detailContent").innerHTML = `
-                <div class="item-info"><strong>物品名称：</strong>${item.name
-                }</div>
-                <div class="item-info"><strong>物品类型：</strong>${item.itemType
-                }</div>
-                <div class="item-info"><strong>${item.type === "lost" ? "丢失" : "捡到"
-                }时间：</strong>${item.time}</div>
-                <div class="item-info"><strong>${item.type === "lost" ? "丢失" : "捡到"
-                }地点：</strong>${item.location}</div>
-                <div class="item-info"><strong>联系方式：</strong>${item.contact
-                }</div>
-                ${item.desc
-                    ? `<div class="item-info"><strong>物品描述：</strong>${item.desc}</div>`
-                    : ""
-                }
-            `;
-
-            // 显示详情弹窗
-            document.getElementById("detailModal").style.display = "flex";
-        }
-
-        // 关闭详情弹窗
-        function closeDetailModal() {
-            document.getElementById("detailModal").style.display = "none";
-        }
-
-        // 删除物品信息（权限验证）
-        function deleteItem(itemId) {
-            if (!currentUser) {
-                alert("请先登录！");
-                openModal();
-                return;
-            }
-
-            const item = itemList.find((i) => i.id === itemId);
-            if (!item) {
-                alert("该信息不存在！");
-                return;
-            }
-
-            // 权限验证：仅发布者/管理员可删除
-            const hasPermission =
-                currentUser.username === item.publisher ||
-                currentUser.role === "管理员";
-            if (!hasPermission) {
-                alert("你没有权限删除这条信息！");
-                return;
-            }
-
-            if (confirm("确定要删除这条信息吗？")) {
-                itemList = itemList.filter((item) => item.id !== itemId);
-                saveItemList();
-                renderItemList();
-                alert("信息已删除！");
-            }
-        }
-
-        // 发布失物信息（记录发布者）
-        function publishLost(e) {
-            e.preventDefault();
-            // 验证登录
-            if (!currentUser) {
-                alert("请先登录！");
-                openModal();
-                return;
-            }
-
-            // 获取表单数据
-            const name = document.getElementById("lostName").value.trim();
-            const itemType = document.getElementById("lostType").value;
-            const time = document.getElementById("lostTime").value;
-            const location = document.getElementById("lostLocation").value.trim();
-            const desc = document.getElementById("lostDesc").value.trim();
-            const contact = document.getElementById("lostContact").value.trim();
-
-            // 验证必填项
-            if (!name || !itemType || !time || !location || !contact) {
-                alert("请填写所有必填项！");
-                return;
-            }
-
-            // 生成唯一ID
-            const newId =
-                itemList.length > 0 ? Math.max(...itemList.map((i) => i.id)) + 1 : 1;
-
-            // 添加新数据（包含发布者信息）
-            itemList.unshift({
-                id: newId,
-                type: "lost",
-                name,
-                itemType,
-                time,
-                location,
-                desc,
-                contact,
-                publisher: currentUser.username,
-            });
-
-            // 保存并重新渲染
-            saveItemList();
-            renderItemList();
-
-            // 清空表单
-            document.querySelector("#lost form").reset();
-            alert("失物信息发布成功！");
-        }
-
-        // 发布招领信息（记录发布者）
-        function publishFound(e) {
-            e.preventDefault();
-            // 验证登录
-            if (!currentUser) {
-                alert("请先登录！");
-                openModal();
-                return;
-            }
-
-            // 获取表单数据
-            const name = document.getElementById("foundName").value.trim();
-            const itemType = document.getElementById("foundType").value;
-            const time = document.getElementById("foundTime").value;
-            const location = document.getElementById("foundLocation").value.trim();
-            const desc = document.getElementById("foundDesc").value.trim();
-            const contact = document.getElementById("foundContact").value.trim();
-
-            // 验证必填项
-            if (!name || !itemType || !time || !location || !contact) {
-                alert("请填写所有必填项！");
-                return;
-            }
-
-            // 生成唯一ID
-            const newId =
-                itemList.length > 0 ? Math.max(...itemList.map((i) => i.id)) + 1 : 1;
-
-            // 添加新数据（包含发布者信息）
-            itemList.unshift({
-                id: newId,
-                type: "found",
-                name,
-                itemType,
-                time,
-                location,
-                desc,
-                contact,
-                publisher: currentUser.username,
-            });
-
-            // 保存并重新渲染
-            saveItemList();
-            renderItemList();
-
-            // 清空表单
-            document.querySelector("#found form").reset();
-            alert("招领信息发布成功！");
-        }
-
-        // ========== 页面初始化 ==========
-        window.onload = function () {
-            // 初始化用户状态
-            const storedUser = sessionStorage.getItem("loginUser");
-            if (storedUser) {
-                currentUser = JSON.parse(storedUser);
-                updateUserUI(currentUser);
-            }
-
-            // 初始化物品列表
-            initItemList();
-
-            // 平滑滚动
-            document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-                anchor.addEventListener("click", function (e) {
-                    e.preventDefault();
-                    const target = document.querySelector(this.getAttribute("href"));
-                    if (target) {
-                        window.scrollTo({
-                            top: target.offsetTop - 80,
-                            behavior: "smooth",
-                        });
-                    }
+                // 提取第一列数据 (过滤空值)
+                let nameList = [];
+                json.forEach(row => {
+                    if (row[0]) nameList.push(row[0]);
                 });
-            });
-        };
+
+                if (nameList.length > 0) {
+                    document.getElementById('names').value = nameList.join('\n');
+                    alert(`成功导入 ${nameList.length} 个名字！`);
+                } else {
+                    alert('Excel 中没有找到有效数据，请检查第一列。');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 获取随机稀有度 (模拟抽卡概率)
+        function getRandomRarity() {
+            const rand = Math.random() * 100;
+            if (rand < 5) return 5;   // 5% 概率金光
+            if (rand < 25) return 4;  // 20% 概率紫光
+            return 3;                 // 75% 概率蓝光
+        }
+
+        function startWish() {
+            const input = document.getElementById('names').value;
+            const nameList = input.split('\n').filter(n => n.trim() !== '');
+
+            if (nameList.length === 0) {
+                alert('名单为空！请先输入名字或导入 Excel。');
+                return;
+            }
+
+            // 1. 抽人逻辑
+            const winner = nameList[Math.floor(Math.random() * nameList.length)];
+
+            // 2. 决定稀有度颜色
+            const rarityLevel = getRandomRarity();
+            const config = rarityConfig[rarityLevel];
+
+            // 3. 应用颜色变量
+            document.documentElement.style.setProperty('--theme-color', config.color);
+            document.documentElement.style.setProperty('--bg-gradient', config.bg);
+
+            // 更新文本内容
+            document.getElementById('winner-text').innerText = winner;
+            document.getElementById('star-display').innerText = config.stars;
+
+            // 4. 开始动画流程
+            const inputScreen = document.getElementById('input-screen');
+            const animContainer = document.getElementById('animation-container');
+            const meteor = document.getElementById('meteor');
+            const flash = document.getElementById('flash');
+            const resultScreen = document.getElementById('result-screen');
+            const resultCard = document.getElementById('result-card');
+            const winnerText = document.getElementById('winner-text');
+            const stars = document.getElementById('star-display');
+
+            // 隐藏 UI
+            inputScreen.style.opacity = 0;
+            setTimeout(() => inputScreen.style.display = 'none', 500);
+
+            // 显示动画层
+            animContainer.style.opacity = 1;
+            animContainer.style.zIndex = 20;
+
+            // --- 阶段一：流星划过 ---
+            meteor.style.display = 'block';
+            // 重置动画
+            meteor.style.animation = 'none';
+            meteor.offsetHeight; /* trigger reflow */
+            meteor.style.animation = 'shoot 1.2s ease-in forwards';
+
+            // --- 阶段二：撞击白屏 ---
+            setTimeout(() => {
+                flash.style.opacity = 1;
+                flash.style.transition = 'opacity 0.1s';
+            }, 1100);
+
+            // --- 阶段三：结果展示 ---
+            setTimeout(() => {
+                meteor.style.display = 'none';
+
+                flash.style.opacity = 0;
+                flash.style.transition = 'opacity 1s';
+
+                animContainer.style.zIndex = -1;
+                resultScreen.style.display = 'flex';
+
+                requestAnimationFrame(() => {
+                    resultScreen.style.opacity = 1;
+
+                    // 卡片动画
+                    resultCard.style.opacity = 1;
+                    resultCard.style.animation = 'none';
+                    resultCard.offsetHeight;
+                    resultCard.style.animation = 'cardReveal 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards';
+
+                    // 文字显现
+                    winnerText.style.opacity = 0;
+                    stars.style.opacity = 0;
+
+                    setTimeout(() => {
+                        winnerText.style.animation = 'textFadeIn 0.5s ease-out forwards';
+                        stars.style.animation = 'textFadeIn 0.5s ease-out 0.2s forwards';
+                    }, 600);
+                });
+
+            }, 1300);
+        }
+
+        function resetSystem() {
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('result-screen').style.opacity = 0;
+
+            document.getElementById('input-screen').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('input-screen').style.opacity = 1;
+            }, 10);
+
+            document.getElementById('animation-container').style.opacity = 0;
+
+            // 简单的防呆，重置卡片状态
+            const resultCard = document.getElementById('result-card');
+            resultCard.style.width = '0px';
+        }
     </script>
 </body>
 
