@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>祈愿系统 - Excel增强版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -12,62 +12,157 @@
             --theme-color: #ffd700;
             /* 默认金色，会动态改变 */
             --bg-gradient: radial-gradient(circle, #4a3e28 0%, #1a1c24 80%);
+            --card-bg: rgba(20, 20, 30, 0.85);
+            --card-border: rgba(100, 100, 150, 0.3);
+            --btn-gradient-start: #dabe86;
+            --btn-gradient-end: #f3e6c3;
         }
 
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #1a1c24;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: white;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            position: relative;
+        }
+
+        /* 背景动画 */
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 装饰性背景元素 */
+        .bg-decoration {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(139, 69, 19, 0.1) 0%, transparent 70%);
+            z-index: -1;
+        }
+
+        .circle-1 {
+            width: 300px;
+            height: 300px;
+            top: -100px;
+            left: -100px;
+        }
+
+        .circle-2 {
+            width: 500px;
+            height: 500px;
+            bottom: -200px;
+            right: -200px;
+            background: radial-gradient(circle, rgba(70, 60, 40, 0.15) 0%, transparent 70%);
         }
 
         /* --- 1. 输入界面 --- */
         #input-screen {
-            background: rgba(0, 0, 0, 0.75);
-            padding: 40px;
-            border-radius: 12px;
+            background: var(--card-bg);
+            padding: 45px 35px;
+            border-radius: 20px;
             text-align: center;
-            border: 1px solid #4a4e5e;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--card-border);
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.7),
+                        0 0 60px rgba(139, 69, 19, 0.2) inset;
             z-index: 10;
-            transition: opacity 0.5s;
-            max-width: 400px;
+            transition: opacity 0.5s, transform 0.4s;
+            max-width: 450px;
             width: 90%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #input-screen::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #ff8a00, #e52e71, #22c1c3, #ff8a00, #e52e71);
+            background-size: 400% 400%;
+            border-radius: 22px;
+            z-index: -1;
+            animation: borderAnimation 8s ease infinite;
+        }
+
+        @keyframes borderAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         h1 {
-            margin: 0 0 20px;
-            color: #d4c5a3;
-            letter-spacing: 2px;
+            margin: 0 0 25px;
+            color: #f0e6d2;
+            letter-spacing: 3px;
+            font-size: 28px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            position: relative;
+        }
+
+        h1::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(to right, transparent, var(--theme-color), transparent);
+            margin: 10px auto;
+            border-radius: 2px;
         }
 
         /* Excel 上传按钮美化 */
         .file-upload-wrapper {
-            margin-bottom: 20px;
+            margin: 0 auto 25px;
             position: relative;
-            overflow: hidden;
             display: inline-block;
+            width: 100%;
+            max-width: 250px;
         }
 
         .btn-file {
-            border: 2px solid #6b7085;
-            color: #ddd;
-            background-color: transparent;
-            padding: 8px 20px;
-            border-radius: 8px;
-            font-size: 14px;
+            border: 2px solid #8a8fa3;
+            color: #e0d8c0;
+            background: linear-gradient(to bottom, rgba(60, 60, 80, 0.7), rgba(40, 40, 50, 0.9));
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 15px;
             cursor: pointer;
-            transition: 0.3s;
+            transition: all 0.3s;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
 
         .btn-file:hover {
-            border-color: #dabe86;
-            color: #dabe86;
+            border-color: #d4c19c;
+            color: #f7f1e3;
+            background: linear-gradient(to bottom, rgba(80, 80, 100, 0.8), rgba(60, 60, 70, 0.9));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-file:active {
+            transform: translateY(0);
         }
 
         input[type=file] {
@@ -77,55 +172,108 @@
             top: 0;
             opacity: 0;
             cursor: pointer;
+            height: 100%;
+            width: 100%;
         }
 
         textarea {
             width: 100%;
-            height: 120px;
-            background: rgba(0, 0, 0, 0.5);
+            height: 150px;
+            background: rgba(30, 30, 45, 0.7);
             border: 1px solid #6b7085;
             color: #fff;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 15px;
+            border-radius: 10px;
             resize: none;
-            font-size: 14px;
-            margin-bottom: 20px;
+            font-size: 15px;
+            margin-bottom: 25px;
             outline: none;
             box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            font-family: inherit;
+        }
+
+        textarea:focus {
+            border-color: #d4af37;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
         }
 
         .btn-wish {
-            background: linear-gradient(to right, #dabe86, #f3e6c3);
+            background: linear-gradient(135deg, var(--btn-gradient-start), var(--btn-gradient-end));
             border: none;
-            padding: 12px 50px;
-            font-size: 18px;
+            padding: 14px 60px;
+            font-size: 19px;
             color: #584b31;
             font-weight: bold;
             border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 0 15px rgba(218, 190, 134, 0.4);
-            transition: transform 0.1s, filter 0.2s;
+            box-shadow: 0 5px 25px rgba(218, 190, 134, 0.5),
+                        0 0 15px rgba(255, 215, 0, 0.3);
+            transition: all 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto;
-            gap: 10px;
+            margin: 15px auto;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            max-width: 250px;
+        }
+
+        .btn-wish::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: 0.5s;
+        }
+
+        .btn-wish:hover::before {
+            left: 100%;
         }
 
         .btn-wish:hover {
-            filter: brightness(1.1);
-            transform: scale(1.05);
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 8px 30px rgba(218, 190, 134, 0.7),
+                        0 0 25px rgba(255, 215, 0, 0.5);
         }
 
         .btn-wish:active {
-            transform: scale(0.95);
+            transform: translateY(1px) scale(0.98);
+        }
+
+        .btn-wish:nth-child(2) {
+            margin-top: 15px;
+            background: linear-gradient(135deg, #ff6b6b, #ffa500);
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
 
         .primogem-icon {
-            width: 24px;
-            height: 24px;
+            width: 26px;
+            height: 26px;
             background: conic-gradient(from 45deg, #a7d8e6, #c597d8, #a7d8e6);
             clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            transition: transform 0.3s;
+        }
+
+        .btn-wish:hover .primogem-icon {
+            transform: rotate(30deg);
+        }
+
+        .btn-wish:active .primogem-icon {
+            transform: rotate(-10deg);
+        }
+
+        .instructions {
+            font-size: 13px;
+            color: #a0a0c0;
+            margin-top: 20px;
+            line-height: 1.5;
         }
 
         /* --- 2. 动画容器 --- */
@@ -205,12 +353,39 @@
             transition: opacity 1s;
         }
 
-        .card {
-            width: 0px;
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 30px;
+            width: 90%;
+            max-width: 1100px;
             height: 600px;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.5));
-            border: 2px solid var(--theme-color);
-            box-shadow: 0 0 50px var(--theme-color);
+            align-items: center;
+            justify-content: center;
+            padding: 20px 0;
+        }
+
+        .single-card-container {
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            grid-template-columns: none !important;
+            width: 100% !important;
+            height: 600px !important;
+        }
+
+        .card {
+            width: 150px;
+            height: 195px;
+            background:
+                linear-gradient(135deg, rgba(60, 55, 80, 0.95) 0%, rgba(40, 35, 50, 1) 100%),
+                var(--theme-color);
+            border: 2px solid transparent;
+            border-radius: 18px;
+            box-shadow:
+                0 10px 30px rgba(0, 0, 0, 0.6),
+                0 0 20px var(--theme-color) inset,
+                0 0 5px var(--theme-color);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -219,30 +394,287 @@
             transform: scale(0.8);
             opacity: 0;
             overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+            padding: 3px;
         }
 
-        .winner-name {
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg,
+                rgba(20, 20, 30, 0.9) 0%,
+                rgba(30, 30, 40, 0.95) 100%);
+            border-radius: 16px;
+            z-index: 1;
+            transition: all 0.4s;
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg,
+                var(--theme-color),
+                rgba(255, 255, 255, 0.8),
+                #ff8a00,
+                var(--theme-color));
+            background-size: 400% 400%;
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0.8;
+            animation: borderAnimation 6s ease infinite;
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.12);
+            box-shadow:
+                0 18px 40px rgba(0, 0, 0, 0.7),
+                0 0 30px var(--theme-color) inset,
+                0 0 50px var(--theme-color);
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 14px;
+            overflow: hidden;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .single-card {
+            width: 250px !important;
+            height: 440px !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            padding: 28px !important;
+            position: relative;
+            overflow: visible;
+        }
+
+        .single-card-front {
+            width: 100%;
+            height: 100%;
+            background:
+                linear-gradient(135deg, rgba(65, 60, 85, 0.97) 0%, rgba(45, 40, 55, 1) 100%),
+                var(--theme-color);
+            border: 3px solid transparent;
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 28px;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 3;
+            box-shadow:
+                0 18px 45px rgba(0, 0, 0, 0.7),
+                0 0 40px var(--theme-color) inset,
+                0 0 8px var(--theme-color);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .single-card-front::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg,
+                rgba(25, 25, 35, 0.95) 0%,
+                rgba(35, 35, 45, 0.98) 100%);
+            border-radius: 22px;
+            z-index: -1;
+            transition: all 0.4s;
+        }
+
+        .single-card-front::after {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            background: linear-gradient(45deg,
+                var(--theme-color),
+                rgba(255, 255, 255, 0.85),
+                #ff8a00,
+                var(--theme-color));
+            background-size: 400% 400%;
+            border-radius: 26px;
+            z-index: -2;
+            opacity: 0.9;
+            animation: borderAnimation 6s ease infinite;
+        }
+
+        .single-card-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-top: 25px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .single-card-name {
+            font-size: 38px;
+            font-weight: bold;
+            color: white;
+            text-shadow:
+                0 0 12px var(--theme-color),
+                0 0 25px var(--theme-color);
+            margin-bottom: 22px;
+            text-align: center;
+            max-height: 120px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            line-height: 1.2;
+            transition: all 0.3s;
+        }
+
+        .single-card-name:hover {
+            text-shadow:
+                0 0 15px var(--theme-color),
+                0 0 30px var(--theme-color),
+                0 0 40px var(--theme-color);
+        }
+
+        .single-card-stars {
+            font-size: 34px;
+            color: var(--theme-color);
+            letter-spacing: 5px;
+            text-shadow: 0 0 15px var(--theme-color);
+            transition: all 0.3s;
+        }
+
+        .single-card-stars:hover {
+            text-shadow: 0 0 15px var(--theme-color),
+                         0 0 25px var(--theme-color),
+                         0 0 35px var(--theme-color);
+        }
+
+        .single-card-decoration {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 120px;
+            height: 120px;
+            background:
+                radial-gradient(circle, var(--theme-color) 0%, rgba(0,0,0,0.4) 70%),
+                linear-gradient(135deg, rgba(110, 110, 130, 0.85), rgba(60, 60, 70, 0.95));
+            border-radius: 50%;
+            border: 4px solid var(--theme-color);
+            margin-bottom: 25px;
+            box-shadow:
+                0 0 25px var(--theme-color),
+                inset 0 0 20px rgba(0, 0, 0, 0.6);
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .single-card-decoration:hover {
+            box-shadow:
+                0 0 35px var(--theme-color),
+                inset 0 0 25px rgba(0, 0, 0, 0.7);
+            transform: scale(1.05);
+        }
+
+        .single-card-icon {
             font-size: 60px;
+            color: white;
+            text-shadow:
+                0 0 20px rgba(0,0,0,0.9),
+                0 0 15px var(--theme-color);
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s;
+        }
+
+        .single-card-icon:hover {
+            text-shadow:
+                0 0 25px rgba(0,0,0,0.9),
+                0 0 20px var(--theme-color),
+                0 0 30px var(--theme-color);
+        }
+
+        .single-card-bg-element {
+            position: absolute;
+            z-index: 1;
+            opacity: 0.15;
+        }
+
+        .single-card-bg-circle {
+            width: 350px;
+            height: 350px;
+            border: 2px solid var(--theme-color);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .card-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 18px;
+            z-index: 3;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+        .card-name {
+            font-size: 17px;
             font-weight: bold;
             color: #fff;
-            text-shadow: 0 0 20px var(--theme-color);
-            z-index: 2;
-            opacity: 0;
-            transform: translateY(20px);
-            text-align: center;
-            padding: 0 20px;
+            text-shadow:
+                0 0 8px var(--theme-color),
+                0 0 15px var(--theme-color);
+            margin-bottom: 10px;
+            word-break: break-all;
+            line-height: 1.3;
+            max-height: 80px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
         }
 
-        .stars {
+        .card-stars {
             color: var(--theme-color);
-            font-size: 30px;
-            margin-bottom: 20px;
-            letter-spacing: 5px;
-            opacity: 0;
+            font-size: 22px;
+            text-shadow: 0 0 10px var(--theme-color);
+            letter-spacing: 2px;
+            margin-top: 5px;
         }
 
         .silhouette {
-            font-size: 150px;
+            font-size: 60px;
             position: absolute;
             color: rgba(0, 0, 0, 0.3);
             z-index: 1;
@@ -265,23 +697,28 @@
             }
         }
 
+        @keyframes borderAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
         @keyframes cardReveal {
             0% {
-                width: 5px;
+                transform: scale(0) rotateY(90deg);
                 opacity: 0;
-                transform: scale(3);
                 filter: brightness(10);
             }
 
             50% {
-                width: 5px;
+                transform: scale(1.1) rotateY(10deg);
                 opacity: 1;
-                transform: scale(1);
                 filter: brightness(2);
             }
 
             100% {
-                width: 350px;
+                transform: scale(1) rotateY(0);
+                opacity: 1;
                 filter: brightness(1);
             }
         }
@@ -307,26 +744,368 @@
         .btn-reset:hover {
             background: rgba(255, 255, 255, 0.1);
         }
+
+        /* 模态对话框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(3px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #2c2c3e, #1a1c24);
+            border: 2px solid var(--theme-color);
+            border-radius: 12px;
+            box-shadow: 0 0 30px var(--theme-color), 0 0 60px rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            width: 400px;
+            max-width: 80%;
+            text-align: center;
+            position: relative;
+            animation: modalAppear 0.3s ease-out;
+        }
+
+        @keyframes modalAppear {
+            from { transform: scale(0.7); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+            color: #d4c5a3;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .modal-body {
+            color: #fff;
+            margin-bottom: 25px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            background: linear-gradient(to right, #dabe86, #f3e6c3);
+            border: none;
+            padding: 10px 30px;
+            font-size: 16px;
+            color: #584b31;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .modal-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(218, 190, 134, 0.6);
+        }
+
+        .modal-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: var(--theme-color);
+        }
+
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            body {
+                height: auto;
+                min-height: 100vh;
+                padding: 20px 10px;
+            }
+
+            #input-screen {
+                width: 95%;
+                max-width: 95%;
+                padding: 30px 20px;
+                margin: 10px auto;
+            }
+
+            h1 {
+                font-size: 24px;
+                margin: 0 0 20px;
+            }
+
+            .file-upload-wrapper {
+                max-width: 100%;
+                margin: 0 auto 20px;
+            }
+
+            .btn-file {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+
+            textarea {
+                height: 120px;
+                padding: 12px;
+                font-size: 14px;
+            }
+
+            .btn-wish {
+                padding: 12px 40px;
+                font-size: 17px;
+                margin: 10px auto;
+                max-width: 100%;
+            }
+
+            .btn-wish:nth-child(2) {
+                margin-top: 10px;
+            }
+
+            .instructions {
+                font-size: 12px;
+                margin-top: 15px;
+            }
+
+            #result-screen {
+                padding: 10px;
+                min-height: 100vh;
+            }
+
+            .cards-container {
+                width: 100%;
+                max-width: 100%;
+                height: auto;
+                min-height: 500px;
+                grid-template-columns: repeat(2, 1fr); /* 在移动端改为2列 */
+                gap: 12px;
+                padding: 10px 0;
+                align-content: flex-start; /* 让卡片靠上对齐 */
+            }
+
+            .card {
+                width: calc(50% - 6px); /* 适配两列布局 */
+                height: 160px;
+                border-radius: 14px;
+                min-height: 160px;
+            }
+
+            .card-content {
+                padding: 12px;
+            }
+
+            .card-name {
+                font-size: 14px;
+                max-height: 50px;
+                margin-bottom: 6px;
+            }
+
+            .card-stars {
+                font-size: 16px;
+            }
+
+            .single-card-container {
+                height: auto !important;
+                min-height: 400px;
+                padding: 20px 0;
+                display: flex !important;
+                justify-content: center !important;
+                align-items: flex-start !important;
+            }
+
+            .single-card {
+                width: 180px !important;
+                height: 350px !important;
+                padding: 18px !important;
+            }
+
+            .single-card-front {
+                padding: 18px;
+                border-radius: 16px;
+            }
+
+            .single-card-name {
+                font-size: 26px;
+                margin-bottom: 12px;
+                max-height: 70px;
+            }
+
+            .single-card-stars {
+                font-size: 24px;
+            }
+
+            .single-card-decoration {
+                width: 80px;
+                height: 80px;
+                margin-bottom: 12px;
+            }
+
+            .single-card-icon {
+                font-size: 40px;
+            }
+
+            .single-card-content {
+                margin-top: 12px;
+            }
+
+            #summary-stats {
+                font-size: 14px;
+                margin-top: 15px;
+            }
+
+            .btn-reset {
+                margin-top: 20px;
+                padding: 8px 25px;
+                font-size: 15px;
+            }
+
+            .modal-content {
+                width: 90%;
+                padding: 20px;
+            }
+
+            .modal-header {
+                font-size: 18px;
+            }
+
+            .modal-body {
+                font-size: 15px;
+            }
+
+            .modal-btn {
+                padding: 8px 25px;
+                font-size: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #input-screen {
+                padding: 20px 15px;
+            }
+
+            h1 {
+                font-size: 22px;
+                margin: 0 0 15px;
+            }
+
+            .btn-file {
+                padding: 9px 15px;
+                font-size: 13px;
+            }
+
+            textarea {
+                height: 100px;
+                padding: 10px;
+                font-size: 13px;
+            }
+
+            .btn-wish {
+                padding: 10px 30px;
+                font-size: 16px;
+            }
+
+            .cards-container {
+                grid-template-columns: 1fr; /* 在小屏幕上改为1列 */
+                min-height: 400px;
+                gap: 15px;
+                padding: 5px 0;
+            }
+
+            .card {
+                width: 100%; /* 单列布局 */
+                max-width: 160px;
+                height: 180px;
+                margin: 0 auto; /* 居中对齐 */
+            }
+
+            .card-name {
+                font-size: 15px;
+                max-height: 60px;
+            }
+
+            .card-stars {
+                font-size: 18px;
+            }
+
+            .single-card {
+                width: 160px !important;
+                height: 320px !important;
+                padding: 15px !important;
+            }
+
+            .single-card-front {
+                padding: 15px;
+            }
+
+            .single-card-name {
+                font-size: 24px;
+                max-height: 60px;
+            }
+
+            .single-card-stars {
+                font-size: 22px;
+            }
+
+            .single-card-decoration {
+                width: 70px;
+                height: 70px;
+            }
+
+            .single-card-icon {
+                font-size: 35px;
+            }
+
+            .btn-reset {
+                margin-top: 15px;
+            }
+        }
+
+        /* 防止在移动设备上缩放 */
+        @media screen and (max-width: 768px) {
+            input[type="file"] {
+                width: 100%;
+                height: 60px;
+            }
+        }
     </style>
 </head>
 
 <body>
 
+    <!-- 装饰性背景元素 -->
+    <div class="bg-decoration">
+        <div class="bg-circle circle-1"></div>
+        <div class="bg-circle circle-2"></div>
+    </div>
+
     <div id="input-screen">
-        <h1>人员名单</h1>
+        <h1>祈愿系统</h1>
 
         <div class="file-upload-wrapper">
-            <button class="btn-file">📂 导入 Excel 文件</button>
+            <button class="btn-file">
+                <span>📂</span>
+                导入 Excel 文件
+            </button>
             <input type="file" id="excel-file" accept=".xlsx, .xls" onchange="importExcel(this)">
         </div>
 
-        <textarea id="names" placeholder="或者在此手动输入&#10;每行一个名字"></textarea>
+        <textarea id="names" placeholder="在此输入名单，每行一个名字" oninput="saveData()"></textarea>
 
         <button class="btn-wish" onclick="startWish()">
             <div class="primogem-icon"></div>
             祈愿 x1
         </button>
-        <p style="font-size: 12px; color: #888; margin-top:10px;">Excel 格式：第一列为名字列表</p>
+        <button class="btn-wish" onclick="startTenWish()">
+            <div class="primogem-icon"></div>
+            祈愿 x10
+        </button>
+        <p class="instructions">Excel 格式：第一列为名字列表 | 支持 .xlsx 和 .xls 格式</p>
     </div>
 
     <div id="animation-container">
@@ -336,13 +1115,34 @@
 
     <div id="result-screen">
         <div class="rays"></div>
-        <div class="card" id="result-card">
-            <div class="silhouette">?</div>
-            <div class="stars" id="star-display">★★★★★</div>
-            <div class="winner-name" id="winner-text"></div>
-        </div>
+        <div class="cards-container" id="cards-container"></div>
+        <div id="summary-stats" style="margin-top: 20px; text-align: center; font-size: 16px;"></div>
         <button class="btn-reset" onclick="resetSystem()">再次祈愿</button>
     </div>
+
+    <!-- 模态对话框 -->
+    <div id="importModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-icon">📊</div>
+            <div class="modal-header">Excel导入成功</div>
+            <div class="modal-body" id="modalMessage">成功导入 <span id="importCount">0</span> 个名字！</div>
+            <div class="modal-footer">
+                <button class="modal-btn" onclick="closeModal('importModal')">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-icon">⚠️</div>
+            <div class="modal-header">导入失败</div>
+            <div class="modal-body" id="errorMessage">Excel 中没有找到有效数据，请检查第一列。</div>
+            <div class="modal-footer">
+                <button class="modal-btn" onclick="closeModal('errorModal')">确定</button>
+            </div>
+        </div>
+    </div>
+
 
     <script>
         // 定义不同稀有度的颜色和配置
@@ -378,9 +1178,13 @@
 
                 if (nameList.length > 0) {
                     document.getElementById('names').value = nameList.join('\n');
-                    alert(`成功导入 ${nameList.length} 个名字！`);
+                    saveData(); // 保存导入的数据
+                    // 显示成功模态对话框
+                    document.getElementById('importCount').textContent = nameList.length;
+                    openModal('importModal');
                 } else {
-                    alert('Excel 中没有找到有效数据，请检查第一列。');
+                    // 显示错误模态对话框
+                    openModal('errorModal');
                 }
             };
             reader.readAsArrayBuffer(file);
@@ -396,12 +1200,14 @@
 
         function startWish() {
             const input = document.getElementById('names').value;
+            saveData(); // 在开始抽奖前保存当前数据
             const nameList = input.split('\n').filter(n => n.trim() !== '');
 
             if (nameList.length === 0) {
                 alert('名单为空！请先输入名字或导入 Excel。');
                 return;
             }
+
 
             // 1. 抽人逻辑
             const winner = nameList[Math.floor(Math.random() * nameList.length)];
@@ -414,9 +1220,33 @@
             document.documentElement.style.setProperty('--theme-color', config.color);
             document.documentElement.style.setProperty('--bg-gradient', config.bg);
 
-            // 更新文本内容
-            document.getElementById('winner-text').innerText = winner;
-            document.getElementById('star-display').innerText = config.stars;
+            // 清空卡片容器并创建单个卡片
+            const cardsContainer = document.getElementById('cards-container');
+            cardsContainer.innerHTML = '';
+            cardsContainer.className = 'cards-container single-card-container'; // 应用单卡片布局类
+
+            // 创建单个卡片
+            const card = document.createElement('div');
+            card.className = 'card single-card'; // 添加竖向长方形样式
+            card.style.setProperty('--theme-color', config.color);
+
+            card.innerHTML = `
+                <div class="single-card-front">
+                    <div class="single-card-decoration">
+                        <div class="single-card-icon">?</div>
+                    </div>
+                    <div class="single-card-content">
+                        <div class="single-card-name">${winner}</div>
+                        <div class="single-card-stars">${config.stars}</div>
+                    </div>
+                </div>
+                <div class="single-card-bg-element single-card-bg-circle"></div>
+            `;
+
+            cardsContainer.appendChild(card);
+
+            // 隐藏统计信息，因为是单次抽取
+            document.getElementById('summary-stats').innerHTML = '';
 
             // 4. 开始动画流程
             const inputScreen = document.getElementById('input-screen');
@@ -424,9 +1254,6 @@
             const meteor = document.getElementById('meteor');
             const flash = document.getElementById('flash');
             const resultScreen = document.getElementById('result-screen');
-            const resultCard = document.getElementById('result-card');
-            const winnerText = document.getElementById('winner-text');
-            const stars = document.getElementById('star-display');
 
             // 隐藏 UI
             inputScreen.style.opacity = 0;
@@ -462,24 +1289,180 @@
                 requestAnimationFrame(() => {
                     resultScreen.style.opacity = 1;
 
-                    // 卡片动画
-                    resultCard.style.opacity = 1;
-                    resultCard.style.animation = 'none';
-                    resultCard.offsetHeight;
-                    resultCard.style.animation = 'cardReveal 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards';
-
-                    // 文字显现
-                    winnerText.style.opacity = 0;
-                    stars.style.opacity = 0;
-
-                    setTimeout(() => {
-                        winnerText.style.animation = 'textFadeIn 0.5s ease-out forwards';
-                        stars.style.animation = 'textFadeIn 0.5s ease-out 0.2s forwards';
-                    }, 600);
+                    // 为单个卡片添加动画效果
+                    const card = document.querySelector('#cards-container .card');
+                    card.style.opacity = 1;
+                    card.style.animation = 'none';
+                    card.offsetHeight;
+                    card.style.animation = 'cardReveal 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards';
                 });
-
             }, 1300);
         }
+
+        function startTenWish() {
+            const input = document.getElementById('names').value;
+            saveData(); // 在开始抽奖前保存当前数据
+            const nameList = input.split('\n').filter(n => n.trim() !== '');
+
+            if (nameList.length === 0) {
+                alert('名单为空！请先输入名字或导入 Excel。');
+                return;
+            }
+
+
+            // 执行10次抽选并记录结果
+            let winners = [];
+            let rareCount = { 3: 0, 4: 0, 5: 0 }; // 统计各稀有度数量
+
+            for (let i = 0; i < 10; i++) {
+                const winner = nameList[Math.floor(Math.random() * nameList.length)];
+                const rarityLevel = getRandomRarity();
+
+                winners.push({ name: winner, rarity: rarityLevel });
+                rareCount[rarityLevel]++;
+            }
+
+            // 根据获得的最高稀有度决定整体主题
+            let highestRarity = 3;
+            if (rareCount[5] > 0) highestRarity = 5;
+            else if (rareCount[4] > 0) highestRarity = 4;
+
+            const config = rarityConfig[highestRarity];
+
+            // 应用颜色变量
+            document.documentElement.style.setProperty('--theme-color', config.color);
+            document.documentElement.style.setProperty('--bg-gradient', config.bg);
+
+            // 清空卡片容器并创建10张卡片
+            const cardsContainer = document.getElementById('cards-container');
+            cardsContainer.innerHTML = '';
+            cardsContainer.className = 'cards-container'; // 确保使用网格布局
+
+            // 为每个中奖者创建卡片
+            winners.forEach((winnerObj, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.setProperty('--theme-color', rarityConfig[winnerObj.rarity].color);
+
+                card.innerHTML = `
+                    <div class="card-content">
+                        <div class="card-name">${winnerObj.name}</div>
+                        <div class="card-stars">${rarityConfig[winnerObj.rarity].stars}</div>
+                    </div>
+                    <div class="silhouette">?</div>
+                `;
+
+                cardsContainer.appendChild(card);
+            });
+
+            // 显示统计信息
+            const statsDiv = document.getElementById('summary-stats');
+            statsDiv.innerHTML = `统计：${rareCount[5]}个5星，${rareCount[4]}个4星，${rareCount[3]}个3星`;
+
+            // 4. 开始动画流程
+            const inputScreen = document.getElementById('input-screen');
+            const animContainer = document.getElementById('animation-container');
+            const meteor = document.getElementById('meteor');
+            const flash = document.getElementById('flash');
+            const resultScreen = document.getElementById('result-screen');
+
+            // 隐藏 UI
+            inputScreen.style.opacity = 0;
+            setTimeout(() => inputScreen.style.display = 'none', 500);
+
+            // 显示动画层
+            animContainer.style.opacity = 1;
+            animContainer.style.zIndex = 20;
+
+            // --- 阶段一：流星划过 ---
+            meteor.style.display = 'block';
+            // 重置动画
+            meteor.style.animation = 'none';
+            meteor.offsetHeight; /* trigger reflow */
+            meteor.style.animation = 'shoot 1.2s ease-in forwards';
+
+            // --- 阶段二：撞击白屏 ---
+            setTimeout(() => {
+                flash.style.opacity = 1;
+                flash.style.transition = 'opacity 0.1s';
+            }, 1100);
+
+            // --- 阶段三：结果展示 ---
+            setTimeout(() => {
+                meteor.style.display = 'none';
+
+                flash.style.opacity = 0;
+                flash.style.transition = 'opacity 1s';
+
+                animContainer.style.zIndex = -1;
+                resultScreen.style.display = 'flex';
+
+                requestAnimationFrame(() => {
+                    resultScreen.style.opacity = 1;
+
+                    // 为每张卡片添加动画效果
+                    const cards = document.querySelectorAll('.card');
+                    cards.forEach((card, index) => {
+                        setTimeout(() => {
+                            card.style.opacity = 1;
+                            card.style.animation = 'none';
+                            card.offsetHeight;
+                            card.style.animation = 'cardReveal 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards';
+                        }, index * 100); // 错开每张卡片的动画时间
+                    });
+                });
+            }, 1300);
+        }
+
+        // 页面加载时自动恢复保存的数据
+        window.onload = function() {
+            loadSavedData();
+        };
+
+        // 保存数据到localStorage
+        function saveData() {
+            const names = document.getElementById('names').value;
+            localStorage.setItem('wishNames', names);
+        }
+
+        // 从localStorage加载数据
+        function loadSavedData() {
+            const savedNames = localStorage.getItem('wishNames');
+            if (savedNames !== null) {
+                document.getElementById('names').value = savedNames;
+            }
+        }
+
+        // 打开模态对话框
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // 防止背景滚动
+        }
+
+        // 关闭模态对话框
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // 恢复背景滚动
+        }
+
+        // 点击模态对话框外部关闭
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+            });
+        };
+
+        // 清除保存的数据
+        function clearSavedData() {
+            localStorage.removeItem('wishNames');
+        }
+
 
         function resetSystem() {
             document.getElementById('result-screen').style.display = 'none';
@@ -492,9 +1475,10 @@
 
             document.getElementById('animation-container').style.opacity = 0;
 
-            // 简单的防呆，重置卡片状态
-            const resultCard = document.getElementById('result-card');
-            resultCard.style.width = '0px';
+            // 清空卡片容器并重置为默认网格布局
+            const cardsContainer = document.getElementById('cards-container');
+            cardsContainer.innerHTML = '';
+            cardsContainer.className = 'cards-container';
         }
     </script>
 </body>
